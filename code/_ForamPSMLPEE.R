@@ -166,8 +166,7 @@ model{
     
     # Compute pCO2 from DIC and pH 
     hyd[i] = 10^(-(pH[ai.prox[i]]))
-    co2[i] = (dic[ai.prox[i]]) / (1 + (Ks1[i]/hyd[i]) + 
-                                    ((Ks1[i] * Ks2[i]) / (hyd[i]^2)))
+    co2[i] = dic[ai.prox[i]] / (1 + Ks1[i] / hyd[i] + Ks1[i] * Ks2[i] / hyd[i]^2)
     fco2[i] = co2[i] / K0[i]
     pco2[i] = fco2[i] / 0.9968
     
@@ -266,50 +265,72 @@ model{
   
   for (i in 2:n.steps){
     
-    # Salinity (ppt)  
+    # Marine
+    ## Salinity (ppt)  
     sal.pc[i] = sal.tau * ((1 - sal.phi^2) / (1 - sal.phi^(2 * dt[i - 1])))   
     sal.eps[i] ~ dnorm(sal.eps[i - 1] * (sal.phi^dt[i - 1]), sal.pc[i])T(-0.3, 0.3)
     sal[i] = sal[1] * (1 + sal.eps[i])
     
-    # Temp in C
+    ## Temp in C
     tempC.pc[i] = tempC.tau * ((1 - tempC.phi^2)/(1 - tempC.phi^(2 * dt[i - 1]))) 
     tempC.eps[i] ~ dnorm(tempC.eps[i - 1] * (tempC.phi^dt[i - 1]), tempC.pc[i])T(-6, 6)
     tempC[i] = tempC[1] + tempC.eps[i]
     
-    # [Ca] (mmol kg^-1); linear decline in Cenozoic follows Holland et al. (2020). 20 mmol/kg decline over last 120 Myr
+    ## [Ca] (mmol kg^-1); linear decline in Cenozoic follows Holland et al. (2020). 20 mmol/kg decline over last 120 Myr
     xca.tdep[i] = -0.00019 * (ages.prox[1] - ages.prox[i])  
     xca.pc[i] = xca.tau * ((1 - xca.phi^2)/(1 - xca.phi^(2 * dt[i - 1])))
     xca.eps[i] ~ dnorm(xca.eps[i - 1] * (xca.phi^dt[i - 1]), xca.pc[i])T(-0.3, 0.3)
     xca[i] = xca[1] * (1 + xca.eps[i]) + xca.tdep[i]
     
-    # [Mg] (mmol kg^-1); imposing max realistic decline in Mg/Casw; decrease suggested by paired benthic Mg/Ca+d18O from ODP Site 1209 (data suggest even greater decline than what's imposed here; Mg decrease used here is derived from max observed shifts in Mg/Casw over Cenozoic as in Holland et al. (2020)
+    ## [Mg] (mmol kg^-1); imposing max realistic decline in Mg/Casw; decrease suggested by paired benthic Mg/Ca+d18O from ODP Site 1209 (data suggest even greater decline than what's imposed here; Mg decrease used here is derived from max observed shifts in Mg/Casw over Cenozoic as in Holland et al. (2020)
     xmg.tdep[i] = -0.00274 * (ages.prox[1] - ages.prox[i])    
     xmg.pc[i] = xmg.tau * ((1 - xmg.phi^2) / (1 - xmg.phi^(2 * dt[i - 1])))
     xmg.eps[i] ~ dnorm(xmg.eps[i - 1] * (xmg.phi^dt[i - 1]), xmg.pc[i])T(-0.3, 0.3)
     xmg[i] = xmg[1] * (1 + xmg.eps[i]) + xmg.tdep[i]
     
-    # [SO4] (mmol kg^-1)
+    ## [SO4] (mmol kg^-1)
     xso4.pc[i] = xso4.tau * ((1 - xso4.phi^2)/(1 - xso4.phi^(2 * dt[i - 1])))
     xso4.eps[i] ~ dnorm(xso4.eps[i - 1] * (xso4.phi^dt[i - 1]), xso4.pc[i])T(-0.3, 0.3)
     xso4[i] = xso4[1] * (1 + xso4.eps[i])
     
-    # d11B of seawater (per mille SRM-951) 
+    ## d11B of seawater (per mille SRM-951) 
     d11Bsw.pc[i] = d11Bsw.tau * ((1 - d11Bsw.phi^2) / (1 - d11Bsw.phi^(2 * dt[i - 1])))
     d11Bsw.eps[i] ~ dnorm(d11Bsw.eps[i - 1] * (d11Bsw.phi^dt[i - 1]), d11Bsw.pc[i])T(-1, 1)
     d11Bsw[i] = d11Bsw[1] + d11Bsw.eps[i]
     
-    # d18O of seawater (per mille SMOW) 
+    ## d18O of seawater (per mille SMOW) 
     d18Osw.pc[i] = d18Osw.tau * ((1 - d18Osw.phi^2) / (1 - d18Osw.phi^(2 * dt[i - 1])))
     d18Osw.eps[i] ~ dnorm(d18Osw.eps[i - 1] * (d18Osw.phi^dt[i - 1]), d18Osw.pc[i])T(-2, 2)
     d18Osw[i] = d18Osw[1] + d18Osw.eps[i]
     
-    # pH
+    ## pH
     pH.pc[i] = pH.tau * ((1 - pH.phi^2) / (1 - pH.phi^(2 * dt[i - 1])))
     pH.eps[i] ~ dnorm(pH.eps[i - 1] * (pH.phi^dt[i - 1]), pH.pc[i])T(-1, 1)
     pH[i] = pH[1] + pH.eps[i]
     
-    # DIC (mol kg^-1) - change in DIC prior based on LOSCAR output and Haynes and Hoenisch 2020
+    ## DIC (mol kg^-1) - change in DIC prior based on LOSCAR output and Haynes and Hoenisch 2020
     dic[i] ~ dnorm(dic.avg.pri[i], 1 / dic.var.pri[i])T(dic.min[i], dic.max[i])
+    
+    # Terrestrial
+    ## Mean annual precipitation
+    MAP.pc[i] = MAP.tau * ((1 - MAP.phi^2) / (1 - MAP.phi^(2 * dt[i - 1])))
+    MAP.eps[i] ~ dnorm(MAP.eps[i-1] * (MAP.phi^dt[i - 1], MAP.pc[i]))
+    MAP[i] = MAP[i - 1] * (MAP.eps[i] + 1)
+    
+    ## PCQ precipitation fraction - what's the right distribution for this?
+    PfPCQ.pc[i] = PfPCQ.tau * ((1 - PfPCQ.phi^2) / (1 - PfPCQ.phi^(2 * dt[i - 1])))
+    PfPCQ.eps[i] ~ dnorm(PfPCQ.eps[i-1] * (PfPCQ.phi^dt[i - 1], PfPCQ.pc[i]))
+    PfPCQ[i] = PfPCQ[i - 1] * (PfPCQ.eps[i] + 1)
+    
+    ## Mean annual temperature
+    MAT.pc[i] = MAT.tau * ((1 - MAT.phi^2) / (1 - MAT.phi^(2 * dt[i - 1])))
+    MAT.eps[i] ~ dnorm(MAT.eps[i-1] * (MAT.phi^dt[i - 1], MAT.pc[i]))
+    MAT[i] = MAT[i - 1] + (MAT.eps[i] + 1)
+    
+    ## PCQ temperature offset
+    PCQ_to.pc[i] = PCQ_to.tau * ((1 - PCQ_to.phi^2) / (1 - PCQ_to.phi^(2 * dt[i - 1])))
+    PCQ_to.eps[i] ~ dnorm(PCQ_to.eps[i-1] * (PCQ_to.phi^dt[i - 1], PCQ_to.pc[i]))
+    PCQ_to[i] = PCQ_to[i - 1] + (PCQ_to.eps[i] + 1)
   }
   
   # Time independent parameters 
@@ -325,4 +346,8 @@ model{
     # Pressure (bar)
     press ~ dnorm(6, press.p)    
     press.p = 1 / 1^2 
+    
+    
+    
+    
 }
