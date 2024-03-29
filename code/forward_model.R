@@ -8,6 +8,7 @@ xmg = 68
 xso4 = 14
 dic = 0.00205
 pco2 = 0.000875
+pCO2 = pco2 * 1e6
 d11Bsw = 38.45
 d18Osw = -1.2
 MAT = 12
@@ -18,7 +19,11 @@ pore = 0.35
 tort = 0.7
 tsc = 0.25
 lat = 35
-h = 0.35
+ha = 0.35
+T.diff = 6
+L = 40 # mean rooting depth, cm
+f_R = 0.15
+d13Ca = -6.5
 
 ## Constants
 R = 83.131 # constant (cm^3 bar mol^-1 K^-1)
@@ -165,36 +170,30 @@ Tsoil.K = Tsoil + 273.15
 ## Potential Evapotranspiration - Hargreaves and Samani (1982) and Turc (1961)
 Ra = 42.608 - 0.3538 * abs(lat) # total radiation at the top of the atmosphere
 Rs = Ra * 0.16 * sqrt(12) # daily temperature range assumed to be 12
-PET_A_D = ifelse (ha < 0.5, 0.013 * (MAT / (MAT + 15)) * (23.885 * Rs + 50) * (1 + ((0.5 - ha) / 0.7)),
+PET_A_D = ifelse(ha < 0.5, 0.013 * (MAT / (MAT + 15)) * (23.885 * Rs + 50) * (1 + ((0.5 - ha) / 0.7)),
                       0.013 * (MAT / (MAT + 15)) * (23.885 * Rs + 50))
 PET_A_D = max(PET_A_D, 0.01)
 PET_A_A = PET_A_D * 365
 
 ## PET_PCQ
 Tair_PCQ = MAT + PCQ_to
-PET_PCQ_D = ifelse (ha < 0.5, 0.013 * (Tair_PCQ / (Tair_PCQ + 15)) * (23.885 * Rs + 50) * (1 + ((0.5 - ha) / 0.7)),
+PET_PCQ_D = ifelse(ha < 0.5, 0.013 * (Tair_PCQ / (Tair_PCQ + 15)) * (23.885 * Rs + 50) * (1 + ((0.5 - ha) / 0.7)),
                         0.013 * (Tair_PCQ / (Tair_PCQ + 15)) * (23.885 * Rs + 50))
 PET_PCQ_D = max(PET_PCQ_D, 0.01)
 PET_PCQ = PET_PCQ_D * 90
 
 ## AET - actual evapotranspiration
-AET_var ~ dnorm(1, 1 / 0.2 ^ 2) # noise parameter - Gentine (2012)
 # AET in mm/quarter from Budyko curve - Pike (1964)
-AET_PCQ = PPCQ * (1 / (sqrt(1 + (1 / ((PET_PCQ / (PPCQ)) * AET_var)) ^ 2)))
+AET_PCQ = PPCQ * (1 / (sqrt(1 + (1 / ((PET_PCQ / (PPCQ)))) ^ 2)))
 
 ### water vapor pressure and relative humidity - dew point temperature - Qiu et al. (2021)
-AI = min(PPCQ / PET_PCQ, 1)
-a.t = -2.81*log(AI) + 1.28
-T.diff ~ dnorm(6, 1)
-Tmin = Tair_PCQ - T.diff
-Tdew = Tmin - a.t
-e_a = 0.6108 * exp(17.27 * Tdew / (Tdew + 237.3)) * 10^3 # actual water vapor pressure (kPa)
-e_s = 0.6112 * exp(17.67 * Tair_PCQ / (Tair_PCQ + 243.5)) * 10^3 # saturated water vapor pressure (kPa)
-ha.mean = e_a / e_s
-# ha.theta = ha.mean / (0.05 ^ 2)
-# ha.shp = ha.mean * ha.theta
-# ha ~ dgamma(ha.shp, ha.theta)
-ha = ha.mean
+#AI = min(PPCQ / PET_PCQ, 1)
+#a.t = -2.81 * log(AI) + 1.28
+#Tmin = Tair_PCQ - T.diff
+#Tdew = Tmin - a.t
+#e_a = 0.6108 * exp(17.27 * Tdew / (Tdew + 237.3)) * 10^3 # actual water vapor pressure (kPa)
+#e_s = 0.6112 * exp(17.67 * Tair_PCQ / (Tair_PCQ + 243.5)) * 10^3 # saturated water vapor pressure (kPa)
+#ha = e_a / e_s
 
 ### ------------------------------------- CARBON ISOTOPE SYSTEM ------------------------------------------------
 ## Free air porosity
@@ -204,23 +203,13 @@ FAP1 = min((pore - ((PPCQ - AET_PCQ) / (L * 10 * pore))), pore - 0.05)
 FAP = max(FAP1, 0.01)
 
 ### Respiration
-## calculate CO2 production depth - Yang (2016)
-# assume equal to average rooting depth (cm) - Quade (2007)
-# AI = PET_A_A / MAP
-# L = ifelse(AI > 1.4, 60, -200 * AI ^ 2 + 250 * AI + 100) # S(z) too high
 # characteristic production depth (cm) - Quade (2007)
-L ~ dunif(30, 60) # mean rooting depth
 k = L / 2 / log(2)
 
 ## calculate soil respiration rate 
-#R_PCQ_D_m1 = 1.25 * exp(0.05452 * TmPCQ) * PPCQ / (127.77 + PPCQ)  # Raich (2002)
-R_PCQ_D_m1 = 1.25 * exp(0.07987 * MAT) * MAP / (29.86 + MAP) # regional model based on CLP data
-f_R ~ dunif(0.1, 0.2) # the proportion of respired CO2 during PCQ - Fischer-Femal & Bowen (2020)
-R_PCQ_D_m = R_PCQ_D_m1 * f_R # (gC/m2/d)
-# R_theta = R_PCQ_D_m / (R_PCQ_D_m * 0.5) ^ 2
-# R_shp = R_PCQ_D_m * R_theta
-# R_PCQ_D ~ dgamma(R_shp, R_theta)
-R_PCQ_D = R_PCQ_D_m
+R_PCQ_D_m1 = 1.25 * exp(0.05452 * TmPCQ) * PPCQ / (127.77 + PPCQ)
+# the proportion of respired CO2 during PCQ - Fischer-Femal & Bowen (2020)
+R_PCQ_D = R_PCQ_D_m1 * f_R # (gC/m2/d)
 
 # convert to molC/cm3/s
 R_PCQ_D1 = R_PCQ_D / (12.01 * 100^2)  # from gC/m2/d to molC/cm2/d
@@ -236,15 +225,9 @@ S_z_mol = k ^ 2 * R_PCQ_S_0 / DIFC * (1 - exp(-z / k)) # (mol/cm3)
 S_z = S_z_mol * (0.08206 * Tsoil.K * 10^9) # ppmv
 
 ## estimate the d13Cr of soil-respired CO2
-# d13Ca = -6.5 # assumed a fixed value
-# DD13_water = 25.09 - 1.2 * (MAP + 975) / (27.2 + 0.04 * (MAP + 975))
-# D13C_plant = (28.26 * 0.22 * (pCO2 + 23.9)) / (28.26 + 0.22 * (pCO2 + 23.9)) - DD13_water # schubert & Jahren (2015)
-# d13Cr = d13Ca - D13C_plant
-
-# fractionation of soil organic matter - PBUQ (Breecker, 2013)
-d13Co = d13Cr + 1 + SOM.frac
-d13Cr ~ dunif(-30, -20)
-SOM.frac ~ dunif(-0.5, 0.5)
+DD13_water = 25.09 - 1.2 * (MAP + 975) / (27.2 + 0.04 * (MAP + 975))
+D13C_plant = (28.26 * 0.22 * (pCO2 + 23.9)) / (28.26 + 0.22 * (pCO2 + 23.9)) - DD13_water # schubert & Jahren (2015)
+d13Cr = d13Ca - D13C_plant
 
 ### d13C of pedogenic carbonate
 d13Cs = (pCO2 * d13Ca + S_z * (1.0044 * d13Cr + 4.4))/(S_z + pCO2)
