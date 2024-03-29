@@ -187,7 +187,7 @@ fm = function(vars){
       0.013 * (t / (t + 15)) * (23.885 * Rs + 50) * (1 + ((0.5 - ha) / 0.7))
     }else{
       0.013 * (t / (t + 15)) * (23.885 * Rs + 50)
-    }
+      }
   }
   PET_A_D = as.vector(sapply(ha, FUN = PET, t = MAT))
   PET_A_D = pmax(PET_A_D, 0.01)
@@ -281,7 +281,7 @@ fm = function(vars){
   z.f = (pore / a.theta) * log(z_m / z.ef) # the modified depth function
   
   R18.s = ifelse(z_m <= z.ef, (alpha18.diff * R18.p * z_m / z.bar + ha * R18.a) / (hs * alpha18.eq),
-                 (R18.ef - R18.p) * exp(-z.f / z.hat) + R18.p)
+                  (R18.ef - R18.p) * exp(-z.f / z.hat) + R18.p)
   d18O.s = ((R18.s / R18.VSMOW) - 1) * 1000
   
   # O isotope composition of soil carbonate
@@ -294,7 +294,9 @@ fm = function(vars){
   
   results = data.frame("d11Bb" = rep(d11Bb), "d18Of" = rep(d18Of), 
                        "mgcaf" = rep(mgcaf), "d13Cc" = rep(d13Cc), 
-                       "d18Oc" = rep(d18Oc), "D47" = rep(D47))
+                       "d18Oc" = rep(d18Oc), "D47" = rep(D47),
+                       "PET_PCQ_D" = rep(PET_PCQ_D), "R18.s" = rep(R18.s),
+                       "R18.a" = rep(R18.a))
 }
 
 
