@@ -9,16 +9,7 @@ model{
   
   mgcaf.obs ~ dnorm(mgcaf, mgcaf.pre)
   mgcaf.pre = 1 / mgcaf.se^2
-  
-  d13Cc.obs ~ dnorm(d13Cc, d13Cc.pre)
-  d13Cc.pre = 1 / d13Cc.se^2
-  
-  d18Oc.obs ~ dnorm(d18Oc, d18Oc.pre)
-  d18Oc.pre = 1 / d18Oc.se^2
-  
-  D47c.obs ~ dnorm(D47c, D47c.pre)
-  D47c.pre = 1 / D47c.se^2
-  
+
   # Soil carbonate ----
   ## Depth to carbonate formation based on Retallack (2005) data, meters
   z = (0.093 * MAP + 13.12)
@@ -269,30 +260,30 @@ model{
   pco2 ~ dnorm(0.000875, 1 / 0.0001)T(0.0001, 0.002) # atmospheric CO2 mixing ratio
   #  pco2 = 0.000875
   MAT_off ~ dnorm(-18, 1 / 4^2) # offset between terrestrial and marine temperatures, C
-  PCQ_to = 15 # PCQ temperature offset, C
+  PCQ_to ~ dnorm(15, 1 / 2^2) # PCQ temperature offset, C
   MAP ~ dnorm(500, 1/50^2)T(100,) # mean annual terrestrial site precipitation, mm
-  PCQ_pf = 0.1 # PCQ precipitation fraction
+  PCQ_pf ~ dbeta(0.5 / 0.9, 5) # PCQ precipitation fraction
   
   ## Secondary marine ----
-  sal = 35 # surface water salinity, ppt
+  sal ~ dnorm(35, 1 / 2^2)T(25, 45) # surface water salinity, ppt
   press = 6 # pressure at habitation depth, bar
-  xca = 21 # seawater [Ca], mmol/kg
-  xmg = 68 # seawater [Mg], mmol/kg 
-  xso4 = 14 # seawater [SO4], mmol/kg
-  dic = 0.00205 # seawater DIC, 
-  d11Bsw = 38.45 # seawater d11B, ppt
-  d18Osw = -1.2 # seawater d18O, ppt
+  xca ~ dnorm(21, 1 / 1^2)T(14, 28) # seawater [Ca], mmol/kg
+  xmg ~ dnorm(68, 1 / 2^2)T(40, 90) # seawater [Mg], mmol/kg 
+  xso4 ~ dnorm(14, 1 / 0.5^2)T(10, 18) # seawater [SO4], mmol/kg
+  dic ~ dnorm(0.00205, 1 / 0.0001^2)T(0.0015, 0.0025) # seawater DIC, 
+  d11Bsw ~ dnorm(38.45, 1 / 0.5^2) # seawater d11B, ppt
+  d18Osw ~ dnorm(-1.2, 1 / 0.1^2) # seawater d18O, ppt
   
   ## Secondary soil ----
-  pore = 0.35 # soil porosity
-  tort = 0.7 # soil tortuosity
-  tsc = 0.25 # seasonal offset of PCQ for thermal diffusion
-  lat = 35 # terrestrial site latitude
-  ha = 0.35 # PCQ atmospheric humidity
-  L = 40 # mean rooting depth, cm
-  f_R = 0.15 # ratio of PCQ to mean annual respiration rate
-  d13Ca = -6.5 # Atmospheric d13C, ppt
-  ETR = 0.06 # Soil evaporation / AET
+  pore ~ dbeta(0.35 * 100 / 0.65, 100)T(0.06,) # soil porosity
+  tort ~ dbeta(0.7 * 100 / 0.3, 100) # soil tortuosity
+  tsc ~ dbeta(0.25 * 1000 / 0.75, 1000) # seasonal offset of PCQ for thermal diffusion
+  lat ~ dunif(32, 38) # terrestrial site latitude
+  ha ~ dbeta(0.35 * 500 / 0.65, 500) # PCQ atmospheric humidity
+  L ~ dgamma(40, 1) # mean rooting depth, cm
+  f_R ~ dbeta(0.15 * 500 / 0.85, 500) # ratio of PCQ to mean annual respiration rate
+  d13Ca ~ dnorm(-6.5, 1 / 0.5^2) # Atmospheric d13C, ppt
+  ETR ~ dbeta(0.06 * 1000 / 0.94, 1000) # Soil evaporation / AET
 }
 
 

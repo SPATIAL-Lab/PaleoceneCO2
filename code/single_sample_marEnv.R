@@ -269,19 +269,19 @@ model{
   pco2 ~ dnorm(0.000875, 1 / 0.0001)T(0.0001, 0.002) # atmospheric CO2 mixing ratio
   #  pco2 = 0.000875
   MAT_off ~ dnorm(-18, 1 / 4^2) # offset between terrestrial and marine temperatures, C
-  PCQ_to = 15 # PCQ temperature offset, C
+  PCQ_to ~ dnorm(15, 1 / 2^2) # PCQ temperature offset, C
   MAP ~ dnorm(500, 1/50^2)T(100,) # mean annual terrestrial site precipitation, mm
-  PCQ_pf = 0.1 # PCQ precipitation fraction
+  PCQ_pf ~ dbeta(0.5 / 0.9, 5) # PCQ precipitation fraction
   
   ## Secondary marine ----
-  sal = 35 # surface water salinity, ppt
+  sal ~ dnorm(35, 1 / 2^2)T(25, 45) # surface water salinity, ppt
   press = 6 # pressure at habitation depth, bar
-  xca = 21 # seawater [Ca], mmol/kg
-  xmg = 68 # seawater [Mg], mmol/kg 
-  xso4 = 14 # seawater [SO4], mmol/kg
-  dic = 0.00205 # seawater DIC, 
-  d11Bsw = 38.45 # seawater d11B, ppt
-  d18Osw = -1.2 # seawater d18O, ppt
+  xca ~ dnorm(21, 1 / 1^2)T(14, 28) # seawater [Ca], mmol/kg
+  xmg ~ dnorm(68, 1 / 2^2)T(40, 90) # seawater [Mg], mmol/kg 
+  xso4 ~ dnorm(14, 1 / 0.5^2)T(10, 18) # seawater [SO4], mmol/kg
+  dic ~ dnorm(0.00205, 1 / 0.0001^2)T(0.0015, 0.0025) # seawater DIC, 
+  d11Bsw ~ dnorm(38.45, 1 / 0.5^2) # seawater d11B, ppt
+  d18Osw ~ dnorm(-1.2, 1 / 0.1^2) # seawater d18O, ppt
   
   ## Secondary soil ----
   pore = 0.35 # soil porosity

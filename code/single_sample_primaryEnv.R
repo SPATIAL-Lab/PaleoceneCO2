@@ -269,9 +269,9 @@ model{
   pco2 ~ dnorm(0.000875, 1 / 0.0001)T(0.0001, 0.002) # atmospheric CO2 mixing ratio
   #  pco2 = 0.000875
   MAT_off ~ dnorm(-18, 1 / 4^2) # offset between terrestrial and marine temperatures, C
-  PCQ_to = 15 # PCQ temperature offset, C
+  PCQ_to ~ dnorm(15, 1 / 2^2) # PCQ temperature offset, C
   MAP ~ dnorm(500, 1/50^2)T(100,) # mean annual terrestrial site precipitation, mm
-  PCQ_pf = 0.1 # PCQ precipitation fraction
+  PCQ_pf ~ dbeta(0.5 / 0.9, 5) # PCQ precipitation fraction
   
   ## Secondary marine ----
   sal = 35 # surface water salinity, ppt
