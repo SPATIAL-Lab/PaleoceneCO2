@@ -1,5 +1,5 @@
 model{
-
+  
   # Data model ----
   d11Bf.obs ~ dnorm(d11Bf, d11Bf.pre)
   d11Bf.pre = 1 / d11Bf.se^2
@@ -7,9 +7,12 @@ model{
   d18Of.obs ~ dnorm(d18Of, d18Of.pre)
   d18Of.pre = 1 / d18Of.se^2
   
+  d13Cf.obs ~ dnorm(d13Cf, d13Cf.pre)
+  d13Cf.pre = 1 / d13Cf.se^2
+  
   mgcaf.obs ~ dnorm(mgcaf, mgcaf.pre)
   mgcaf.pre = 1 / mgcaf.se^2
-
+  
   # Soil carbonate ----
   ## Depth to carbonate formation based on Retallack (2005) data, meters
   z = (0.093 * MAP + 13.12)
@@ -21,19 +24,17 @@ model{
   Tsoil.K = Tsoil + 273.15
   
   ## Potential Evapotranspiration - Hargreaves and Samani (1982) and Turc (1961)
-  Ra = 42.608 - 0.3538 * abs(lat) # total radiation at the top of the atmosphere
-  Rs = Ra * 0.16 * sqrt(12) # daily temperature range assumed to be 12
   PET_A_D.1 = ifelse(ha < 0.5, 
-                   0.013 * (MAT / (MAT + 15)) * (23.885 * Rs + 50) * (1 + ((0.5 - ha) / 0.7)),
-                   0.013 * (MAT / (MAT + 15)) * (23.885 * Rs + 50))
+                     0.013 * (MAT / (MAT + 15)) * (23.885 * Rs + 50) * (1 + ((0.5 - ha) / 0.7)),
+                     0.013 * (MAT / (MAT + 15)) * (23.885 * Rs + 50))
   PET_A_D = max(PET_A_D.1, 0.01)
   PET_A_A = PET_A_D * 365
   
   ## PET_PCQ
   Tair_PCQ = MAT + PCQ_to
   PET_PCQ_D.1 = ifelse(ha < 0.5, 
-                     0.013 * (Tair_PCQ / (Tair_PCQ + 15)) * (23.885 * Rs + 50) * (1 + ((0.5 - ha) / 0.7)),
-                     0.013 * (Tair_PCQ / (Tair_PCQ + 15)) * (23.885 * Rs + 50))
+                       0.013 * (Tair_PCQ / (Tair_PCQ + 15)) * (23.885 * Rs + 50) * (1 + ((0.5 - ha) / 0.7)),
+                       0.013 * (Tair_PCQ / (Tair_PCQ + 15)) * (23.885 * Rs + 50))
   PET_PCQ_D = max(PET_PCQ_D.1, 0.01)
   PET_PCQ = PET_PCQ_D * 90
   
@@ -110,7 +111,7 @@ model{
   hs = min(ha + z_m / z.bar, 1)
   z.f = (pore / a.theta) * log(z_m / z.ef) # the modified depth function
   R18.s = ifelse(z_m <= z.ef, (alpha18.diff * R18.p * z_m / z.bar + ha * R18.a) / (hs * alpha18.eq),
-                  (R18.ef - R18.p) * exp(-z.f / z.hat) + R18.p)
+                 (R18.ef - R18.p) * exp(-z.f / z.hat) + R18.p)
   d18O.s = ((R18.s / R18.VSMOW) - 1) * 1000
   
   ### Isotope composition of soil carbonate
@@ -210,6 +211,9 @@ model{
        (2 * 0.09))
   d18Of = d18Of.pr * (1 - indexop) + indexop * d18Oseccal
   
+  ### d13Cforam
+  d13Cf = d13Ca + d13Cepsilon
+  
   ### Mg/Caforam following Hollis et al. (2019) Mg/Ca carb chem correction approach
   mgcasw = (xmg / xca)     
   Bcorr = ((mgcasw^Hp) / (mgcaswm^Hp)) * Bmod
@@ -273,17 +277,20 @@ model{
   dic ~ dnorm(0.00205, 1 / 0.0001^2)T(0.0015, 0.0025) # seawater DIC, 
   d11Bsw ~ dnorm(38.45, 1 / 0.5^2) # seawater d11B, ppt
   d18Osw ~ dnorm(-1.2, 1 / 0.1^2) # seawater d18O, ppt
+  d13Cepsilon ~ dnorm(10, 1 / 0.5 ^ 2) # offset between foram calcite and d13Catm
   
   ## Secondary soil ----
-  pore ~ dbeta(0.35 * 100 / 0.65, 100)T(0.06,) # soil porosity
-  tort ~ dbeta(0.7 * 100 / 0.3, 100) # soil tortuosity
   tsc ~ dbeta(0.25 * 1000 / 0.75, 1000) # seasonal offset of PCQ for thermal diffusion
-  lat ~ dunif(32, 38) # terrestrial site latitude
   ha ~ dbeta(0.35 * 500 / 0.65, 500) # PCQ atmospheric humidity
-  L ~ dgamma(40, 1) # mean rooting depth, cm
   f_R ~ dbeta(0.15 * 500 / 0.85, 500) # ratio of PCQ to mean annual respiration rate
   d13Ca ~ dnorm(-6.5, 1 / 0.5^2) # Atmospheric d13C, ppt
   ETR ~ dbeta(0.06 * 1000 / 0.94, 1000) # Soil evaporation / AET
+  
+  lat ~ dunif(32, 38) # terrestrial site latitude
+  Ra = 42.608 - 0.3538 * abs(lat) # total radiation at the top of the atmosphere
+  Rs = Ra * 0.16 * sqrt(12) # daily temperature range assumed to be 12
+  L ~ dgamma(40, 1) # mean rooting depth, cm
+  pore ~ dbeta(0.35 * 100 / 0.65, 100)T(0.06,) # soil porosity
+  tort ~ dbeta(0.7 * 100 / 0.3, 100) # soil tortuosity
+  
 }
-
-

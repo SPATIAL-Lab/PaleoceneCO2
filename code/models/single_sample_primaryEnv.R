@@ -7,6 +7,9 @@ model{
   d18Of.obs ~ dnorm(d18Of, d18Of.pre)
   d18Of.pre = 1 / d18Of.se^2
   
+  d13Cf.obs ~ dnorm(d13Cf, d13Cf.pre)
+  d13Cf.pre = 1 / d13Cf.se^2
+  
   mgcaf.obs ~ dnorm(mgcaf, mgcaf.pre)
   mgcaf.pre = 1 / mgcaf.se^2
   
@@ -219,6 +222,9 @@ model{
        (2 * 0.09))
   d18Of = d18Of.pr * (1 - indexop) + indexop * d18Oseccal
   
+  ### d13Cforam
+  d13Cf = d13Ca + d13Cepsilon
+  
   ### Mg/Caforam following Hollis et al. (2019) Mg/Ca carb chem correction approach
   mgcasw = (xmg / xca)     
   Bcorr = ((mgcasw^Hp) / (mgcaswm^Hp)) * Bmod
@@ -282,6 +288,7 @@ model{
   dic = 0.00205 # seawater DIC, 
   d11Bsw = 38.45 # seawater d11B, ppt
   d18Osw = -1.2 # seawater d18O, ppt
+  d13Cepsilon = 10 # offset between foram calcite and d13Catm
   
   ## Secondary soil ----
   pore = 0.35 # soil porosity

@@ -1,6 +1,21 @@
 model{
 
   # Data model ----
+  for(i in 1:length(d18Of.ai)){
+    d18Of.obs[i, 1] ~ dnorm(d18Of[d18Of.ai[i]], d18Of.pre[i])
+    d18Of.pre[i] = 1 / d18Of.obs[i, 2] ^ 2
+  }
+  
+  for(i in 1:length(d13Cf.ai)){
+    d13Cf.obs[i, 1] ~ dnorm(d13Cf[d13Cf.ai[i]], d13Cf.pre[i])
+    d13Cf.pre[i] = 1 / d13Cf.obs[i, 2] ^ 2
+  }
+  
+  for(i in 1:length(mgcaf.ai)){
+    mgcaf.obs[i, 1] ~ dnorm(mgcaf[mgcaf.ai[i]], mgcaf.pre[i])
+    mgcaf.pre[i] = 1 / mgcaf.obs[i, 2] ^ 2
+  }
+  
   for(i in 1:length(d11BGrub.ai)){
     d11BGrub.obs[i, 1] ~ dnorm(d11BGrub[d11BGrub.ai[i]], d11BGrub.pre[i])
     d11BGrub.pre[i] = 1 / d11BGrub.obs[i, 2] ^ 2
@@ -9,16 +24,6 @@ model{
   for(i in 1:length(d11BTsac.ai)){
     d11BTsac.obs[i, 1] ~ dnorm(d11BTsac[d11BTsac.ai[i]], d11BTsac.pre[i])
     d11BTsac.pre[i] = 1 / d11BTsac.obs[i, 2] ^ 2
-  }
-  
-  for(i in 1:length(d18Of.ai)){
-    d18Of.obs[i, 1] ~ dnorm(d18Of[d18Of.ai[i]], d18Of.pre[i])
-    d18Of.pre[i] = 1 / d18Of.obs[i, 2] ^ 2
-  }
-  
-  for(i in 1:length(mgcaf.ai)){
-    mgcaf.obs[i, 1] ~ dnorm(mgcaf[mgcaf.ai[i]], mgcaf.pre[i])
-    mgcaf.pre[i] = 1 / mgcaf.obs[i, 2] ^ 2
   }
   
   for(i in 1:length(d13Cc.ai)){
@@ -237,14 +242,16 @@ model{
          (2 * 0.09))
     d18Of[i] = d18Of.pr[i] * (1 - indexop) + indexop * d18Oseccal
     
+    ### d13Cforam
+    d13Cf[i] = d13Ca[i] + d13Cepsilon[i]
+    
     ### Mg/Caforam following Hollis et al. (2019) Mg/Ca carb chem correction approach
     mgcasw[i] = (xmg[i] / xca[i])     
     Bcorr[i] = ((mgcasw[i] ^ Hp) / (mgcaswm ^ Hp)) * Bmod
     mgca_corr[i] = Bcorr[i] * (exp(A * tempC[i]))
     mgcaf[i] = mgca_corr[i] / (1 - (sal[i] - 35) * salcorrco)
     
-    # Constants and derived values ----
-    ## Derived values
+    ### Derived values
     pCO2[i] = pco2[i] * 1e6 # atmospheric CO2 mixing ratio, ppm
     MAT[i] = tempC[i] + MAT_off[i] # mean annual terrestrial site air temperature, C 
     d18.p[i] = -15 + 0.58 * MAT[i] # Precipitation d18O, ppt
@@ -256,27 +263,28 @@ model{
   for(i in 1:length(ai)){
     # Time dependent variables ----
     ## Primary environmental ----
-    tempC[i] ~ dnorm(30, 1 / 3^2) # surface water temperature, C
+    tempC[i] ~ dnorm(30, 1 / 3 ^ 2) # surface water temperature, C
     pco2[i] ~ dnorm(0.000875, 1 / 0.0001)T(0.0001, 0.002) # atmospheric CO2 mixing ratio
-    MAT_off[i] ~ dnorm(-18, 1 / 4^2) # offset between terrestrial and marine temperatures, C
-    PCQ_to[i] ~ dnorm(15, 1 / 2^2) # PCQ temperature offset, C
-    MAP[i] ~ dnorm(500, 1/50^2)T(100,) # mean annual terrestrial site precipitation, mm
+    MAT_off[i] ~ dnorm(-18, 1 / 4 ^ 2) # offset between terrestrial and marine temperatures, C
+    PCQ_to[i] ~ dnorm(15, 1 / 2 ^ 2) # PCQ temperature offset, C
+    MAP[i] ~ dnorm(500, 1/50 ^ 2)T(100,) # mean annual terrestrial site precipitation, mm
     PCQ_pf[i] ~ dbeta(0.5 / 0.9, 5) # PCQ precipitation fraction
     
     ## Secondary marine ----
-    sal[i] ~ dnorm(35, 1 / 2^2)T(25, 45) # surface water salinity, ppt
-    xca[i] ~ dnorm(21, 1 / 1^2)T(14, 28) # seawater [Ca], mmol/kg
-    xmg[i] ~ dnorm(68, 1 / 2^2)T(40, 90) # seawater [Mg], mmol/kg 
-    xso4[i] ~ dnorm(14, 1 / 0.5^2)T(10, 18) # seawater [SO4], mmol/kg
-    dic[i] ~ dnorm(0.00205, 1 / 0.0001^2)T(0.0015, 0.0025) # seawater DIC, 
-    d11Bsw[i] ~ dnorm(38.45, 1 / 0.5^2) # seawater d11B, ppt
-    d18Osw[i] ~ dnorm(-1.2, 1 / 0.1^2) # seawater d18O, ppt
+    sal[i] ~ dnorm(35, 1 / 2 ^ 2)T(25, 45) # surface water salinity, ppt
+    xca[i] ~ dnorm(21, 1 / 1 ^ 2)T(14, 28) # seawater [Ca], mmol/kg
+    xmg[i] ~ dnorm(68, 1 / 2 ^ 2)T(40, 90) # seawater [Mg], mmol/kg 
+    xso4[i] ~ dnorm(14, 1 / 0.5 ^ 2)T(10, 18) # seawater [SO4], mmol/kg
+    dic[i] ~ dnorm(0.00205, 1 / 0.0001 ^ 2)T(0.0015, 0.0025) # seawater DIC, 
+    d11Bsw[i] ~ dnorm(38.45, 1 / 0.5 ^ 2) # seawater d11B, ppt
+    d18Osw[i] ~ dnorm(-1.2, 1 / 0.1 ^ 2) # seawater d18O, ppt
+    d13Cepsilon[i] ~ dnorm(10, 1 / 0.5 ^ 2) # offset between foram calcite and d13Catm
     
     ## Secondary soil ----
     tsc[i] ~ dbeta(0.25 * 1000 / 0.75, 1000) # seasonal offset of PCQ for thermal diffusion
     ha[i] ~ dbeta(0.35 * 500 / 0.65, 500) # PCQ atmospheric humidity
     f_R[i] ~ dbeta(0.15 * 500 / 0.85, 500) # ratio of PCQ to mean annual respiration rate
-    d13Ca[i] ~ dnorm(-6.5, 1 / 0.5^2) # Atmospheric d13C, ppt
+    d13Ca[i] ~ dnorm(-6.5, 1 / 1 ^ 2) # Atmospheric d13C, ppt
     ETR[i] ~ dbeta(0.06 * 1000 / 0.94, 1000) # Soil evaporation / AET
   }
   

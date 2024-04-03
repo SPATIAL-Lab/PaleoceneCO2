@@ -1,11 +1,14 @@
 model{
-
+  
   # Data model ----
   d11Bf.obs ~ dnorm(d11Bf, d11Bf.pre)
   d11Bf.pre = 1 / d11Bf.se^2
   
   d18Of.obs ~ dnorm(d18Of, d18Of.pre)
   d18Of.pre = 1 / d18Of.se^2
+  
+  d13Cf.obs ~ dnorm(d13Cf, d13Cf.pre)
+  d13Cf.pre = 1 / d13Cf.se^2
   
   mgcaf.obs ~ dnorm(mgcaf, mgcaf.pre)
   mgcaf.pre = 1 / mgcaf.se^2
@@ -33,16 +36,16 @@ model{
   Ra = 42.608 - 0.3538 * abs(lat) # total radiation at the top of the atmosphere
   Rs = Ra * 0.16 * sqrt(12) # daily temperature range assumed to be 12
   PET_A_D.1 = ifelse(ha < 0.5, 
-                   0.013 * (MAT / (MAT + 15)) * (23.885 * Rs + 50) * (1 + ((0.5 - ha) / 0.7)),
-                   0.013 * (MAT / (MAT + 15)) * (23.885 * Rs + 50))
+                     0.013 * (MAT / (MAT + 15)) * (23.885 * Rs + 50) * (1 + ((0.5 - ha) / 0.7)),
+                     0.013 * (MAT / (MAT + 15)) * (23.885 * Rs + 50))
   PET_A_D = max(PET_A_D.1, 0.01)
   PET_A_A = PET_A_D * 365
   
   ## PET_PCQ
   Tair_PCQ = MAT + PCQ_to
   PET_PCQ_D.1 = ifelse(ha < 0.5, 
-                     0.013 * (Tair_PCQ / (Tair_PCQ + 15)) * (23.885 * Rs + 50) * (1 + ((0.5 - ha) / 0.7)),
-                     0.013 * (Tair_PCQ / (Tair_PCQ + 15)) * (23.885 * Rs + 50))
+                       0.013 * (Tair_PCQ / (Tair_PCQ + 15)) * (23.885 * Rs + 50) * (1 + ((0.5 - ha) / 0.7)),
+                       0.013 * (Tair_PCQ / (Tair_PCQ + 15)) * (23.885 * Rs + 50))
   PET_PCQ_D = max(PET_PCQ_D.1, 0.01)
   PET_PCQ = PET_PCQ_D * 90
   
@@ -119,7 +122,7 @@ model{
   hs = min(ha + z_m / z.bar, 1)
   z.f = (pore / a.theta) * log(z_m / z.ef) # the modified depth function
   R18.s = ifelse(z_m <= z.ef, (alpha18.diff * R18.p * z_m / z.bar + ha * R18.a) / (hs * alpha18.eq),
-                  (R18.ef - R18.p) * exp(-z.f / z.hat) + R18.p)
+                 (R18.ef - R18.p) * exp(-z.f / z.hat) + R18.p)
   d18O.s = ((R18.s / R18.VSMOW) - 1) * 1000
   
   ### Isotope composition of soil carbonate
@@ -219,6 +222,9 @@ model{
        (2 * 0.09))
   d18Of = d18Of.pr * (1 - indexop) + indexop * d18Oseccal
   
+  ### d13Cforam
+  d13Cf = d13Ca + d13Cepsilon
+  
   ### Mg/Caforam following Hollis et al. (2019) Mg/Ca carb chem correction approach
   mgcasw = (xmg / xca)     
   Bcorr = ((mgcasw^Hp) / (mgcaswm^Hp)) * Bmod
@@ -282,6 +288,7 @@ model{
   dic = 0.00205 # seawater DIC, 
   d11Bsw = 38.45 # seawater d11B, ppt
   d18Osw = -1.2 # seawater d18O, ppt
+  d13Cepsilon = 10 # offset between foram calcite and d13Catm
   
   ## Secondary soil ----
   pore = 0.35 # soil porosity
