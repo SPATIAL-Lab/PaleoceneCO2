@@ -50,5 +50,4 @@ parms = c("tempC", "pCO2", "MAT", "MAP",
           "pH", "d11Bsw", "sal", "d18Osw.sc", "d18Of.pr", "mgcasw")
 
 post.ms = jags.parallel(d, NULL, parms, "code/models/multi_sample.R", n.iter = 5e5)
-View(post.ms$BUGSoutput$summary)
 save(post.ms, "bigout/ms.rda")

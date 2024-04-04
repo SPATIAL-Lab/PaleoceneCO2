@@ -9,9 +9,11 @@ md = read.csv("data/Shatsky_data.csv")
 td$d18O.stdev = sqrt(0.1^2 + td$d18O.stdev^2)
 td$d13C.stdev = sqrt(0.1^2 + td$d13C.stdev^2)
 
-## Remove PETM and earliest terrestrial data
+## Remove PETM and earliest terrestrial data, make ages negative
 md = md[md$age <= 55.741 | md$age >= 55.942,]
 td = td[td$Age < 67, ]
+md$age = -md$age
+td$Age = -td$Age
 
 ## Parse data into series
 ### Marine
@@ -32,7 +34,7 @@ D47c = na.exclude(td[c("Age", "D47", "D47.stderr")])
 
 ages = ts(d18Of$age, d13Cf$age, mgcaf$age, d11BGrub$age, d11BTsac$age,
           d13Cc$Age, d18Oc$Age, D47c$Age,
-          seq(50, 70, by = 0.1))
+          seq(-70, -50, by = 0.1))
 tsi = ages$ts_ind
 
 d = list(ai = ages$ts, 
@@ -49,6 +51,5 @@ parms = c("tempC", "pCO2", "MAT", "MAP",
           "TmPCQ", "PPCQ", "d18.p", "z_m", "d18O.s", "AET_PCQ", "S_z", "d13Cr",
           "pH", "d11Bsw", "sal", "d18Osw.sc", "d18Of.pr", "mgcasw")
 
-post.ts = jags(d, NULL, parms, "code/models/multi_sample.R")
-View(post$BUGSoutput$summary)
+post.ts = jags.parallel(d, NULL, parms, "code/models/time_series.R")
 save(post, file = "bigout/ts.rda")
