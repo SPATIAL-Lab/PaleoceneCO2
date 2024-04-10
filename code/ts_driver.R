@@ -34,26 +34,29 @@ D47c = na.exclude(td[c("Age", "D47", "D47.stderr")])
 
 ages = ts(d18Of$age, d13Cf$age, mgcaf$age, d11BGrub$age, d11BTsac$age,
           d13Cc$Age, d18Oc$Age, D47c$Age,
+          c(d18Of$age, d13Cf$age, mgcaf$age, d11BGrub$age, d11BTsac$age),
+          c(d13Cc$Age, d18Oc$Age, D47c$Age),
           seq(-65.1, -52.7, by = 0.1))
 tsi = ages$ts_ind
 
 d = list(ai = ages$ts, 
-         d18Of.obs = d18Of[, 2:3], d18Of.ai = tsi[[1]],
-         d13Cf.obs = d13Cf[, 2:3], d13Cf.ai = tsi[[2]],
-         mgcaf.obs = mgcaf[, 2:3], mgcaf.ai = tsi[[3]],
-         d11BGrub.obs = d11BGrub[, 2:3], d11BGrub.ai = tsi[[4]],
-         d11BTsac.obs = d11BTsac[, 2:3], d11BTsac.ai = tsi[[5]],
-         d13Cc.obs = d13Cc[, 2:3], d13Cc.ai = tsi[[6]],
-         d18Oc.obs = d18Oc[, 2:3], d18Oc.ai = tsi[[7]],
-         D47c.obs = D47c[, 2:3], D47c.ai = tsi[[8]])
+         d18Of.obs = d18Of[, 2:3], d18Of.ai = match(tsi[[1]], tsi[[9]]),
+         d13Cf.obs = d13Cf[, 2:3], d13Cf.ai = match(tsi[[2]], tsi[[9]]),
+         mgcaf.obs = mgcaf[, 2:3], mgcaf.ai = match(tsi[[3]], tsi[[9]]),
+         d11BGrub.obs = d11BGrub[, 2:3], d11BGrub.ai = match(tsi[[4]], tsi[[9]]),
+         d11BTsac.obs = d11BTsac[, 2:3], d11BTsac.ai = match(tsi[[5]], tsi[[9]]),
+         d13Cc.obs = d13Cc[, 2:3], d13Cc.ai = match(tsi[[6]], tsi[[10]]),
+         d18Oc.obs = d18Oc[, 2:3], d18Oc.ai = match(tsi[[7]], tsi[[10]]),
+         D47c.obs = D47c[, 2:3], D47c.ai = match(tsi[[8]], tsi[[10]]),
+         mar.ai = tsi[[9]], ter.ai = tsi[[10]])
 
-parms = c("tempC", "pCO2", "MAT", "MAP",
+parms = c("tempC", "pco2", "MAT", "MAP",
           "TmPCQ", "PPCQ", "d18.p", "z_m", "d18O.s", "AET_PCQ", "S_z", "d13Cr",
           "pH", "d11Bsw", "sal", "d18Osw.sc", "d18Of.pr", "mgcasw")
 
 p = proc.time()
 post.tsf = jags.parallel(d, NULL, parms, "code/models/time_series_fixedChem.R", 
-                        n.iter = 2e3, n.chains = 3)
+                        n.iter = 4e3, n.chains = 3)
 proc.time() - p
 
-save(post.tsf, file = "bigout/tsf3e4.rda")
+save(post.tsf, file = "bigout/tsf4e3.rda")

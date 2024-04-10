@@ -246,7 +246,7 @@ model{
     d13Cf[i] = d13Ca[i] + d13Cepsilon[i]
     
     ### Mg/Caforam following Hollis et al. (2019) Mg/Ca carb chem correction approach
-    mgcasw[i] = (xmg[i] / xmg[i])     
+    mgcasw[i] = (xmg[i] / xca[i])     
     Bcorr[i] = ((mgcasw[i] ^ Hp) / (mgcaswm ^ Hp)) * Bmod
     mgca_corr[i] = Bcorr[i] * (exp(A * tempC[i]))
     mgcaf[i] = mgca_corr[i] / (1 - (sal[i] - 35) * salcorrco)
