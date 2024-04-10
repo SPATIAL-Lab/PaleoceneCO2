@@ -14,7 +14,7 @@ points(x, rep(150, length(x)))
 x = ts$ts[unlist(ts$ts_ind[6:8])]
 points(x, rep(200, length(x)), col = "red")
 
-plot.jpi(ts$ts, post.ts$BUGSoutput$sims.list$pCO2, xlim = c(-60, -53))
+plot.jpi(ts$ts, post.ts$BUGSoutput$sims.list$pCO2, 50, xlim = c(-60, -53))
 plot.jpi(ts$ts, post.tsf$BUGSoutput$sims.list$pCO2, xlim = c(-60, -53))
 plot.jpi(ts$ts, post.tsm$BUGSoutput$sims.list$pCO2, xlim = c(-60, -53))
 

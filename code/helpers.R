@@ -11,7 +11,7 @@ ai = function(){
   
   ## Remove PETM and earliest terrestrial data, make ages negative
   md = md[md$age <= 55.741 | md$age >= 55.942,]
-  td = td[td$Age <= 65, ]
+  td = td[td$Age <= 59 & td$Age <= 53, ]
   md$age = -md$age
   td$Age = -td$Age
   
@@ -36,7 +36,7 @@ ai = function(){
             d13Cc$Age, d18Oc$Age, D47c$Age,
             c(d18Of$age, d13Cf$age, mgcaf$age, d11BGrub$age, d11BTsac$age),
             c(d13Cc$Age, d18Oc$Age, D47c$Age),
-            seq(-65.1, -52.7, by = 0.1)) 
+            seq(-59, -53, by = 0.2)) 
 }
 
 
