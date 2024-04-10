@@ -340,10 +340,10 @@ model{
   }
 
   # Time dependent variables, ts parameters ----
-  tempC.tau ~ dgamma(10, 1)
+  tempC.tau ~ dgamma(10, 10)
   tempC.phi ~ dbeta(2, 5)
   
-  pco2.tau ~ dgamma(5, 5e-8)
+  pco2.tau ~ dgamma(5, 5e-7)
   pco2.phi ~ dbeta(2, 5)
   
   MAT_off.tau ~ dgamma(10, 1)
@@ -352,7 +352,7 @@ model{
   PCQ_to.tau ~ dgamma(10, 1)
   PCQ_to.phi ~ dbeta(2, 5)
   
-  MAP.tau ~ dgamma(10, 1e-2)
+  MAP.tau ~ dgamma(10, 1e-1)
   MAP.phi ~ dbeta(2, 5)
   
   PCQ_pf.tau ~ dgamma(10, 1e-3)
@@ -367,19 +367,19 @@ model{
   d13Cepsilon.tau ~ dgamma(10, 1e-2)
   d13Cepsilon.phi ~ dbeta(5, 2)
   
-  tsc.tau ~ dgamma(10, 1e-4)
+  tsc.tau ~ dgamma(10, 1e-5)
   tsc.phi ~ dbeta(2, 5)
   
-  ha.tau ~ dgamma(10, 1e-3)
+  ha.tau ~ dgamma(10, 1e-4)
   ha.phi ~ dbeta(2, 5)
   
-  f_R.tau ~ dgamma(10, 1e-4)
+  f_R.tau ~ dgamma(10, 1e-5)
   f_R.phi ~ dbeta(2, 5)
   
-  d13Ca.tau ~ dgamma(10, 1e-2)
+  d13Ca.tau ~ dgamma(10, 1e-1)
   d13Ca.phi ~ dbeta(2, 5)
   
-  ETR.tau ~ dgamma(10, 1e-4)
+  ETR.tau ~ dgamma(10, 1e-5)
   ETR.phi ~ dbeta(2, 5)
 
   # Time dependent variables, initial conditions ----

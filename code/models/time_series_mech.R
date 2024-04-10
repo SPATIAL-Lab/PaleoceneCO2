@@ -42,32 +42,25 @@ model{
   }
   
   for(i in 1:length(ter.ai)){  
-    ## Derived values
-    pCO2[i] = pco2[ter.ai[i]] * 1e6 # atmospheric CO2 mixing ratio, ppm
-    MAT[i] = tempC[ter.ai[i]] + MAT_off[ter.ai[i]] # mean annual terrestrial site air temperature, C 
-    d18.p[i] = -15 + 0.58 * MAT[i] # Precipitation d18O, ppt
-    PPCQ[i] = MAP[ter.ai[i]] * PCQ_pf[ter.ai[i]] 
-    TmPCQ[i] = MAT[i] + PCQ_to[ter.ai[i]] 
-    
     # Soil carbonate ----
     ## Depth to carbonate formation based on Retallack (2005) data, meters
     z[i] = (0.093 * MAP[ter.ai[i]] + 13.12)
     z_m[i] = z[i] / 100
     
     ## Soil temperatures at depth z
-    Tsoil[i] = MAT[i] + (PCQ_to[ter.ai[i]] * sin(2 * 3.1415 * tsc[ter.ai[i]] - z[i] / d)) / 
+    Tsoil[i] = MAT[ter.ai[i]] + (PCQ_to[ter.ai[i]] * sin(2 * 3.1415 * tsc[ter.ai[i]] - z[i] / d)) / 
       exp(z[i] / d) 
     Tsoil.K[i] = Tsoil[i] + 273.15
     
     ## Potential Evapotranspiration - Hargreaves and Samani (1982) and Turc (1961)
     PET_A_D.1[i] = ifelse(ha[ter.ai[i]] < 0.5, 
-                          0.013 * (MAT[i] / (MAT[i] + 15)) * (23.885 * Rs + 50) * (1 + ((0.5 - ha[ter.ai[i]]) / 0.7)),
-                          0.013 * (MAT[i] / (MAT[i] + 15)) * (23.885 * Rs + 50))
+                          0.013 * (MAT[ter.ai[i]] / (MAT[ter.ai[i]] + 15)) * (23.885 * Rs + 50) * (1 + ((0.5 - ha[ter.ai[i]]) / 0.7)),
+                          0.013 * (MAT[ter.ai[i]] / (MAT[ter.ai[i]] + 15)) * (23.885 * Rs + 50))
     PET_A_D[i] = max(PET_A_D.1[i], 0.01)
     PET_A_A[i] = PET_A_D[i] * 365
     
     ## PET_PCQ
-    Tair_PCQ[i] = MAT[i] + PCQ_to[ter.ai[i]]
+    Tair_PCQ[i] = MAT[ter.ai[i]] + PCQ_to[ter.ai[i]]
     PET_PCQ_D.1[i] = ifelse(ha[ter.ai[i]] < 0.5, 
                             0.013 * (Tair_PCQ[i] / (Tair_PCQ[i] + 15)) * (23.885 * Rs + 50) * (1 + ((0.5 - ha[ter.ai[i]]) / 0.7)),
                             0.013 * (Tair_PCQ[i] / (Tair_PCQ[i] + 15)) * (23.885 * Rs + 50))
@@ -75,15 +68,15 @@ model{
     PET_PCQ[i] = PET_PCQ_D[i] * 90
     
     ## AET in mm/quarter from Budyko curve - Pike (1964)
-    AET_PCQ[i] = PPCQ[i] * (1 / (sqrt(1 + (1 / ((PET_PCQ[i] / (PPCQ[i])))) ^ 2)))
+    AET_PCQ[i] = PPCQ[ter.ai[i]] * (1 / (sqrt(1 + (1 / ((PET_PCQ[i] / (PPCQ[ter.ai[i]])))) ^ 2)))
     
     ## Carbon isotopes ----
     ### Free air porosity
-    FAP.1[i] = min((pore - ((PPCQ[i] - AET_PCQ[i]) / (L * 10 * pore))), pore - 0.05)
+    FAP.1[i] = min((pore - ((PPCQ[ter.ai[i]] - AET_PCQ[i]) / (L * 10 * pore))), pore - 0.05)
     FAP[i] = max(FAP.1[i], 0.01)
     
     ### Soil respiration rate 
-    R_PCQ_D_m1[i] = 1.25 * exp(0.05452 * TmPCQ[i]) * PPCQ[i] / (127.77 + PPCQ[i])
+    R_PCQ_D_m1[i] = 1.25 * exp(0.05452 * TmPCQ[ter.ai[i]]) * PPCQ[ter.ai[i]] / (127.77 + PPCQ[ter.ai[i]])
     R_PCQ_D[i] = R_PCQ_D_m1[i] * f_R[ter.ai[i]] # (gC/m2/d)
     
     ### Convert to molC/cm3/s
@@ -101,16 +94,16 @@ model{
     
     ### d13C of soil-respired CO2
     DD13_water[i] = 25.09 - 1.2 * (MAP[ter.ai[i]] + 975) / (27.2 + 0.04 * (MAP[ter.ai[i]] + 975))
-    D13C_plant[i] = (28.26 * 0.22 * (pCO2[i] + 23.9)) / (28.26 + 0.22 * (pCO2[i] + 23.9)) - DD13_water[i] # schubert & Jahren (2015)
+    D13C_plant[i] = (28.26 * 0.22 * (pCO2[ter.ai[i]] + 23.9)) / (28.26 + 0.22 * (pCO2[ter.ai[i]] + 23.9)) - DD13_water[i] # schubert & Jahren (2015)
     d13Cr[i] = d13Ca[ter.ai[i]] - D13C_plant[i]
     
     ### d13C of pedogenic carbonate
-    d13Cs[i] = (pCO2[i] * d13Ca[ter.ai[i]] + S_z[i] * (1.0044 * d13Cr[i] + 4.4))/(S_z[i] + pCO2[i])
+    d13Cs[i] = (pCO2[ter.ai[i]] * d13Ca[ter.ai[i]] + S_z[i] * (1.0044 * d13Cr[i] + 4.4))/(S_z[i] + pCO2[ter.ai[i]])
     d13Cc[i] = ((1 + (11.98 - 0.12 * Tsoil[i]) / 1000) * (d13Cs[i] + 1000)) - 1000
     
     ## Oxygen isotopes ----
     ### Rainfall isotopes
-    R18.p[i] = (d18.p[i] / 1000 + 1) * R18.VSMOW
+    R18.p[i] = (d18.p[ter.ai[i]] / 1000 + 1) * R18.VSMOW
     
     ### Equilibrium fractionation (Horita and Wesolowski 1994)
     alpha18.eq[i] = 1 / exp(((1.137e6 / (Tsoil.K[i] ^ 2) - 0.4156e3/Tsoil.K[i] - 2.0667) /1000))
@@ -157,41 +150,38 @@ model{
   }
   
   for(i in 1:length(mar.ai)){
-    ## Derived values
-    temp[i] = tempC[mar.ai[i]] + 273.15
-    
     # Marine carbonate system ----
     ## Equilibrium constants ----
-    Ks1m_st[i] = exp(2.83655 - 2307.1266 / temp[i] - 1.5529413 * 
-                       (log(temp[i])) - ((0.20760841 + 4.0484 / temp[i]) * 
-                                           sqrt(sal[mar.ai[i]])) + 
+    Ks1m_st[i] = exp(2.83655 - 2307.1266 / temp[mar.ai[i]] - 1.5529413 * 
+                       (log(temp[mar.ai[i]])) - ((0.20760841 + 4.0484 / temp[mar.ai[i]]) * 
+                                                   sqrt(sal[mar.ai[i]])) + 
                        0.0846834 * sal[mar.ai[i]] - 0.00654208 * 
                        (sal[mar.ai[i]]^1.5) + 
                        log(1 - (0.001005 * sal[mar.ai[i]])))
-    Ks2m_st[i] = exp(-9.226508 - 3351.6106 / temp[i] - 0.2005743 * (log(temp[i])) - 
-                       ((0.106901773 + 23.9722 / temp[i]) * sqrt(sal[mar.ai[i]])) + 
+    Ks2m_st[i] = exp(-9.226508 - 3351.6106 / temp[mar.ai[i]] - 0.2005743 * (log(temp[mar.ai[i]])) - 
+                       ((0.106901773 + 23.9722 / temp[mar.ai[i]]) * sqrt(sal[mar.ai[i]])) + 
                        0.1130822 * sal[mar.ai[i]] - 0.00846934 * 
                        (sal[mar.ai[i]]^1.5) + 
                        log(1 - (0.001005 * sal[mar.ai[i]])))
-    logKsspcm_st[i] = ((-171.9065 - 0.077993 * temp[i] + 2839.319 / temp[i] + 
-                          71.595 * (log(temp[i]) / log(10)) + 
-                          (-0.77712 + 0.0028426 * temp[i] + 178.34 / temp[i]) * 
+    logKsspcm_st[i] = ((-171.9065 - 0.077993 * temp[mar.ai[i]] + 2839.319 / temp[mar.ai[i]] + 
+                          71.595 * (log(temp[mar.ai[i]]) / log(10)) + 
+                          (-0.77712 + 0.0028426 * temp[mar.ai[i]] + 178.34 / temp[mar.ai[i]]) * 
                           (sal[mar.ai[i]]^0.5) - 0.07711 * sal[mar.ai[i]] + 
                           0.0041249 * (sal[mar.ai[i]]^1.5)))
     Ksspcm_st[i] = 10 ^ (logKsspcm_st[i])
     lnKsB_st[i] = ((-8966.9 - 2890.53 * sal[mar.ai[i]] ^ 0.5 - 77.942 * 
                       sal[mar.ai[i]] + 1.728 * sal[mar.ai[i]] ^ 1.5 - 0.0996 * 
-                      sal[mar.ai[i]] ^ 2) / temp[i]) + 148.0248 + 137.1942 * 
+                      sal[mar.ai[i]] ^ 2) / temp[mar.ai[i]]) + 148.0248 + 137.1942 * 
       sal[mar.ai[i]] ^ 0.5 + 1.62142 * sal[mar.ai[i]] - 
       (24.4344 + 25.085 * sal[mar.ai[i]] ^ 0.5 + 0.2474 * sal[mar.ai[i]]) * 
-      (log(temp[i])) + (0.053105 * sal[mar.ai[i]] ^ 0.5 * temp[i])
+      (log(temp[mar.ai[i]])) + (0.053105 * sal[mar.ai[i]] ^ 0.5 * temp[mar.ai[i]])
     KsB_st[i] = exp(lnKsB_st[i])
-    Ksw_st[i] = exp(148.96502 - 13847.26 / temp[i] - 23.6521 * (log(temp[i])) + 
-                      (118.67 / temp[i] - 5.977 + 1.0495 * (log(temp[i]))) * 
+    Ksw_st[i] = exp(148.96502 - 13847.26 / temp[mar.ai[i]] - 23.6521 * (log(temp[mar.ai[i]])) + 
+                      (118.67 / temp[mar.ai[i]] - 5.977 + 1.0495 * (log(temp[mar.ai[i]]))) * 
                       (sal[mar.ai[i]] ^ 0.5) - 0.01615 * sal[mar.ai[i]])
-    K0[i] = exp(9345.17 / temp[i] - 60.2409 + 23.3585 * (log(temp[i] / 100)) + 
-                  sal[mar.ai[i]] * (0.023517 - 0.00023656 * temp[i] + 
-                                      0.0047036 * ((temp[i] / 100) ^ 2)))
+    K0[i] = exp(9345.17 / temp[mar.ai[i]] - 60.2409 + 23.3585 * (log(temp[mar.ai[i]] / 100)) + 
+                  sal[mar.ai[i]] * (0.023517 - 0.00023656 * temp[mar.ai[i]] + 
+                                      0.0047036 * ((temp[mar.ai[i]] / 100) ^ 2)))
     
     ### Adjust for the effect of pressure (Millero 1995)
     delV1[i] = (-25.50) + 0.1271 * tempC[mar.ai[i]]
@@ -208,16 +198,16 @@ model{
     delkB[i] = -2.84 / 1000
     delkw[i] = (-5.13 / 1000) + (0.0794 / 1000) * tempC[mar.ai[i]]
     
-    Ks1m[i] = (exp(-((delV1[i] / (R * temp[i])) * press) + 
-                     ((0.5 * delk1[i]) / (R * temp[i])) * press^2)) * Ks1m_st[i]
-    Ks2m[i] = (exp(-((delV2[i] / (R * temp[i])) * press) + 
-                     ((0.5 * delk2[i]) / (R * temp[i])) * press^2)) * Ks2m_st[i]
-    Ksspcm[i] = (exp(-((delVspc[i] / (R * temp[i])) * press) + 
-                       ((0.5 * delkspc[i]) / (R * temp[i])) * press^2)) * Ksspcm_st[i]
-    KsB[i] = (exp(-((delVB[i] / (R * temp[i])) * press) + 
-                    ((0.5 * delkB[i]) / (R * temp[i])) * press^2)) * KsB_st[i]
-    Ksw[i] = (exp(-((delVw[i] / (R * temp[i])) * press) + 
-                    ((0.5 * delkw[i]) / (R * temp[i])) * press^2)) * Ksw_st[i]
+    Ks1m[i] = (exp(-((delV1[i] / (R * temp[mar.ai[i]])) * press) + 
+                     ((0.5 * delk1[i]) / (R * temp[mar.ai[i]])) * press^2)) * Ks1m_st[i]
+    Ks2m[i] = (exp(-((delV2[i] / (R * temp[mar.ai[i]])) * press) + 
+                     ((0.5 * delk2[i]) / (R * temp[mar.ai[i]])) * press^2)) * Ks2m_st[i]
+    Ksspcm[i] = (exp(-((delVspc[i] / (R * temp[mar.ai[i]])) * press) + 
+                       ((0.5 * delkspc[i]) / (R * temp[mar.ai[i]])) * press^2)) * Ksspcm_st[i]
+    KsB[i] = (exp(-((delVB[i] / (R * temp[mar.ai[i]])) * press) + 
+                    ((0.5 * delkB[i]) / (R * temp[mar.ai[i]])) * press^2)) * KsB_st[i]
+    Ksw[i] = (exp(-((delVw[i] / (R * temp[mar.ai[i]])) * press) + 
+                    ((0.5 * delkw[i]) / (R * temp[mar.ai[i]])) * press^2)) * Ksw_st[i]
     
     ### Correct for past seawater [Ca], [Mg], and [SO4] following ZT19
     Ks1[i] = Ks1m[i] * (1 + (5e-3 * (xca[mar.ai[i]] / xcam - 1) + 
@@ -250,7 +240,7 @@ model{
     d18Osw.sc[i] = d18Osw[mar.ai[i]] + (sw.sens * (sal[mar.ai[i]] - 35))
     d18Oswpdb[i] = d18Osw.sc[i] - 0.27
     d18Of.pr[i] = d18Oswpdb[i] + 
-      ((4.64 - (((4.64^2) - (4 * 0.09 * (16.1 - tempC[mar.ai[i]]))) ^ 0.5)) / 
+      ((4.64 - (((4.64 ^ 2) - (4 * 0.09 * (16.1 - tempC[mar.ai[i]]))) ^ 0.5)) / 
          (2 * 0.09))
     d18Of[i] = d18Of.pr[i] * (1 - indexop) + indexop * d18Oseccal
     
@@ -267,6 +257,14 @@ model{
   # Time dependent variables, time series ----
   for(i in 2:length(ai)){
     dt[i] = ai[i] - ai[i-1]
+    
+    ## Derived values ----
+    pCO2[i] = pco2[i] * 1e6 # atmospheric CO2 mixing ratio, ppm
+    MAT[i] = tempC[i] + MAT_off[i] # mean annual terrestrial site air temperature, C 
+    d18.p[i] = -15 + 0.58 * MAT[i] # Precipitation d18O, ppt
+    PPCQ[i] = MAP[i] * PCQ_pf[i] 
+    TmPCQ[i] = MAT[i] + PCQ_to[i] 
+    temp[i] = tempC[i] + 273.15
     
     ## Primary environmental ----
     ### Temperature coupled to pco2 through climate sensitivity
@@ -349,10 +347,10 @@ model{
   }
   
   # Time dependent variables, ts parameters ----
-  tempC.tau ~ dgamma(10, 1)
+  tempC.tau ~ dgamma(10, 5)
   tempC.phi ~ dbeta(2, 5)
   
-  pco2.tau ~ dgamma(5, 5e-8)
+  pco2.tau ~ dgamma(5, 5e-7)
   pco2.phi ~ dbeta(2, 5)
   
   MAT_off.tau ~ dgamma(10, 1)
@@ -361,7 +359,7 @@ model{
   PCQ_to.tau ~ dgamma(10, 1)
   PCQ_to.phi ~ dbeta(2, 5)
   
-  MAP.tau ~ dgamma(10, 1e-2)
+  MAP.tau ~ dgamma(10, 1e-1)
   MAP.phi ~ dbeta(2, 5)
   
   PCQ_pf.tau ~ dgamma(10, 1e-3)
@@ -379,19 +377,19 @@ model{
   d13Cepsilon.tau ~ dgamma(10, 1e-2)
   d13Cepsilon.phi ~ dbeta(5, 2)
   
-  tsc.tau ~ dgamma(10, 1e-4)
+  tsc.tau ~ dgamma(10, 1e-5)
   tsc.phi ~ dbeta(2, 5)
   
-  ha.tau ~ dgamma(10, 1e-3)
+  ha.tau ~ dgamma(10, 1e-4)
   ha.phi ~ dbeta(2, 5)
   
-  f_R.tau ~ dgamma(10, 1e-4)
+  f_R.tau ~ dgamma(10, 1e-5)
   f_R.phi ~ dbeta(2, 5)
   
   d13Ca.tau ~ dgamma(10, 1e-4)
   d13Ca.phi ~ dbeta(2, 5)
   
-  ETR.tau ~ dgamma(10, 1e-4)
+  ETR.tau ~ dgamma(10, 1e-5)
   ETR.phi ~ dbeta(2, 5)
 
   # Time dependent variables, initial conditions ----

@@ -11,7 +11,7 @@ td$d13C.stdev = sqrt(0.1^2 + td$d13C.stdev^2)
 
 ## Remove PETM and earliest terrestrial data, make ages negative
 md = md[md$age <= 55.741 | md$age >= 55.942,]
-td = td[td$Age <= 65, ]
+td = td[td$Age <= 59 & td$Age <= 53, ]
 md$age = -md$age
 td$Age = -td$Age
 
@@ -36,7 +36,7 @@ ages = ts(d18Of$age, d13Cf$age, mgcaf$age, d11BGrub$age, d11BTsac$age,
           d13Cc$Age, d18Oc$Age, D47c$Age,
           c(d18Of$age, d13Cf$age, mgcaf$age, d11BGrub$age, d11BTsac$age),
           c(d13Cc$Age, d18Oc$Age, D47c$Age),
-          seq(-65.1, -52.7, by = 0.1))
+          seq(-59, -53, by = 0.2))
 tsi = ages$ts_ind
 
 d = list(ai = ages$ts, 
@@ -50,7 +50,7 @@ d = list(ai = ages$ts,
          D47c.obs = D47c[, 2:3], D47c.ai = match(tsi[[8]], tsi[[10]]),
          mar.ai = tsi[[9]], ter.ai = tsi[[10]])
 
-parms = c("tempC", "pco2", "MAT", "MAP",
+parms = c("tempC", "pCO2", "MAT", "MAP", "wrng",
           "TmPCQ", "PPCQ", "d18.p", "z_m", "d18O.s", "AET_PCQ", "S_z", "d13Cr",
           "pH", "d11Bsw", "sal", "d18Osw.sc", "d18Of.pr", "mgcasw")
 
