@@ -1,0 +1,45 @@
+# Set up time series ----
+ai = function(){
+  source("code/constructors.R")
+  ## Read data
+  td = read.csv("data/BBNP_data.csv")
+  md = read.csv("data/Shatsky_data.csv")
+  
+  ## Remove PETM and earliest terrestrial data, make ages negative
+  md = md[md$age <= 55.741 | md$age >= 55.942,]
+  td = td[td$Age < 67, ]
+  md$age = -md$age
+  td$Age = -td$Age
+  
+  ## Parse data into series
+  ### Marine
+  d18Of = na.exclude(md[c("age", "d18O")])
+  d18Of$d18O.stdev = rep(0.05)
+  d13Cf = na.exclude(md[c("age", "d13C")])
+  d13Cf$d13C.stdev = rep(0.05)
+  mgcaf = na.exclude(md[c("age", "MgCa")])
+  mgcaf$MgCa.stdev = rep(0.1)
+  d11BGrub = d11BTsac = na.exclude(md[c("age", "d11B", "d11Bse", "species")])
+  d11BGrub = d11BGrub[d11BGrub$species == "Grub", -4]
+  d11BTsac = d11BTsac[d11BTsac$species == "Tsac", -4]
+  
+  ### Terrestrial
+  d13Cc = na.exclude(td[c("Age", "d13C", "d13C.stdev")])
+  d18Oc = na.exclude(td[c("Age", "d18O", "d18O.stdev")])
+  D47c = na.exclude(td[c("Age", "D47", "D47.stderr")])
+  
+  ages = ts(d18Of$age, d13Cf$age, mgcaf$age, d11BGrub$age, d11BTsac$age,
+            d13Cc$Age, d18Oc$Age, D47c$Age,
+            seq(-70, -50, by = 0.1))  
+}
+
+
+plot.jpi = function(x, y, n = 500, ...){
+  # x = timeseries ages, y = simslist matrix
+  inds = sample(seq_along(y[, 1]), n)
+  plot(x, y[inds[1],], type = "l", xlab = "Age", ylim = range(y), 
+       col = rgb(0, 0, 0, 0.05), ...)
+  for(i in inds[-1]){
+    lines(x, y[i,], col = rgb(0, 0, 0, 0.1))
+  }
+}
