@@ -6,23 +6,23 @@ td = read.csv("data/BBNP_data.csv")
 md = read.csv("data/Shatsky_data.csv")
 
 ## Protect against overly optimistic uncertainties
-td$d18O.stdev = sqrt(0.1^2 + td$d18O.stdev^2)
-td$d13C.stdev = sqrt(0.1^2 + td$d13C.stdev^2)
+td$d18O.stdev = sqrt(0.4 ^ 2 + td$d18O.stdev^2)
+td$d13C.stdev = sqrt(0.4 ^ 2 + td$d13C.stdev^2)
 
 ## Remove PETM and earliest terrestrial data, make ages negative
 md = md[md$age <= 55.741 | md$age >= 55.942,]
-td = td[td$Age <= 59 & td$Age <= 53, ]
+td = td[td$Age <= 59 & td$Age >= 53, ]
 md$age = -md$age
 td$Age = -td$Age
 
 ## Parse data into series
 ### Marine
 d18Of = na.exclude(md[c("age", "d18O")])
-d18Of$d18O.stdev = rep(0.05)
+d18Of$d18O.stdev = rep(0.1)
 d13Cf = na.exclude(md[c("age", "d13C")])
-d13Cf$d13C.stdev = rep(0.05)
+d13Cf$d13C.stdev = rep(0.1)
 mgcaf = na.exclude(md[c("age", "MgCa")])
-mgcaf$MgCa.stdev = rep(0.1)
+mgcaf$MgCa.stdev = rep(0.15)
 d11BGrub = d11BTsac = na.exclude(md[c("age", "d11B", "d11Bse", "species")])
 d11BGrub = d11BGrub[d11BGrub$species == "Grub", -4]
 d11BTsac = d11BTsac[d11BTsac$species == "Tsac", -4]
@@ -50,13 +50,15 @@ d = list(ai = ages$ts,
          D47c.obs = D47c[, 2:3], D47c.ai = match(tsi[[8]], tsi[[10]]),
          mar.ai = tsi[[9]], ter.ai = tsi[[10]])
 
-parms = c("tempC", "pCO2", "MAT", "MAP",
-          "TmPCQ", "PPCQ", "d18.p", "z_m", "d18O.s", "AET_PCQ", "S_z", "d13Cr",
-          "pH", "d11Bsw", "sal", "d18Osw.sc", "d18Of.pr", "mgcasw")
+parms = c("tempC", "pCO2", "MAT", "MAP", "TmPCQ", "PPCQ", "d18.p", 
+          "z_m", "d18O.s", "AET_PCQ", "S_z", "d13Cr",
+          "pH", "d11Bsw", "sal", "d18Osw.sc", "d18Of.pr", "mgcasw",
+          "d18Of", "d13Cf", "mgcaf", "d11BGrub", "d11BTsac",
+          "d13Cc", "d18Oc", "D47c")
 
 p = proc.time()
 post.ts = jags.parallel(d, NULL, parms, "code/models/time_series.R", 
-                        n.iter = 4e3, n.chains = 3)
+                        n.iter = 2e4, n.chains = 3)
 proc.time() - p
 
-save(post.ts, file = "bigout/ts4e3.rda")
+save(post.ts, file = "bigout/ts2e4.rda")

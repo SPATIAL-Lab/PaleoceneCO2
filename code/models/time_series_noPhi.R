@@ -269,146 +269,108 @@ model{
     ## Primary environmental ----
     tempC[i] = max(tempC.p[i], 0)
     tempC.p[i] = tempC[i - 1] + tempC.eps[i]
-    tempC.eps[i] ~ dnorm(tempC.eps[i - 1] * (tempC.phi ^ dt[i]), tempC.pc[i])
-    tempC.pc[i] = tempC.tau * ((1 - tempC.phi ^ 2) / (1 - tempC.phi ^ (2 * dt[i])))
-    
+    tempC.eps[i] ~ dnorm(0, tempC.tau)
+
     pco2[i] = max(min(pco2.p[i], 0.003), 0.0001)
     pco2.p[i] = pco2[i - 1] + pco2.eps[i]
-    pco2.eps[i] ~ dnorm(pco2.eps[i - 1] * (pco2.phi ^ dt[i]), pco2.pc[i])
-    pco2.pc[i] = pco2.tau * ((1 - pco2.phi ^ 2) / (1 - pco2.phi ^ (2 * dt[i])))
-    
+    pco2.eps[i] ~ dnorm(0, pco2.tau)
+
     MAT_off[i] = MAT_off[i - 1] + MAT_off.eps[i]
-    MAT_off.eps[i] ~ dnorm(MAT_off.eps[i - 1] * (MAT_off.phi ^ dt[i]), MAT_off.pc[i])
-    MAT_off.pc[i] = MAT_off.tau * ((1 - MAT_off.phi ^ 2) / (1 - MAT_off.phi ^ (2 * dt[i])))
+    MAT_off.eps[i] ~ dnorm(0, MAT_off.tau)
 
     PCQ_to[i] = PCQ_to[i - 1] + PCQ_to.eps[i]
-    PCQ_to.eps[i] ~ dnorm(PCQ_to.eps[i - 1] * (PCQ_to.phi ^ dt[i]), PCQ_to.pc[i])
-    PCQ_to.pc[i] = PCQ_to.tau * ((1 - PCQ_to.phi ^ 2) / (1 - PCQ_to.phi ^ (2 * dt[i])))
-    
+    PCQ_to.eps[i] ~ dnorm(0, PCQ_to.tau)
+
     MAP[i] = MAP[i - 1] * (1 + MAP.eps[i])
-    MAP.eps[i] ~ dnorm(MAP.eps[i - 1] * (MAP.phi ^ dt[i]), MAP.pc[i])T(-1,)
-    MAP.pc[i] = MAP.tau * ((1 - MAP.phi ^ 2) / (1 - MAP.phi ^ (2 * dt[i])))
-    
+    MAP.eps[i] ~ dnorm(0, MAP.tau)T(-1,)
+
     PCQ_pf[i] = max(min(PCQ_pf.p[i], 0.25), 0.01)
     PCQ_pf.p[i] = PCQ_pf[i - 1] + PCQ_pf.eps[i]
-    PCQ_pf.eps[i] ~ dnorm(PCQ_pf.eps[i - 1] * (PCQ_pf.phi ^ dt[i]), PCQ_pf.pc[i])
-    PCQ_pf.pc[i] = PCQ_pf.tau * ((1 - PCQ_pf.phi ^ 2) / (1 - PCQ_pf.phi ^ (2 * dt[i])))
-    
+    PCQ_pf.eps[i] ~ dnorm(0, PCQ_pf.tau)
+
     ## Secondary marine ----
     sal[i] = sal[1] * (1 + sal.eps[i])
-    sal.eps[i] ~ dnorm(sal.eps[i - 1] * (sal.phi ^ dt[i]), sal.pc[i])T(-0.5, 0.5)
-    sal.pc[i] = sal.tau * ((1 - sal.phi ^ 2) / (1 - sal.phi ^ (2 * dt[i])))   
-    
+    sal.eps[i] ~ dnorm(0, sal.tau)T(-0.5, 0.5)
+
     xca[i] = xca[1] * (1 + xca.eps[i])
-    xca.eps[i] ~ dnorm(xca.eps[i - 1] * (xca.phi ^ dt[i]), xca.pc[i])T(-0.5, 0.5)
-    xca.pc[i] = xca.tau * ((1 - xca.phi ^ 2) / (1 - xca.phi ^ (2 * dt[i])))
-    
+    xca.eps[i] ~ dnorm(0, xca.tau)T(-0.5, 0.5)
+
     xmg[i] = xmg[1] * (1 + xmg.eps[i])
-    xmg.eps[i] ~ dnorm(xmg.eps[i - 1] * (xmg.phi ^ dt[i]), xmg.pc[i])T(-0.5, 0.5)
-    xmg.pc[i] = xmg.tau * ((1 - xmg.phi ^ 2) / (1 - xmg.phi ^ (2 * dt[i])))
+    xmg.eps[i] ~ dnorm(0, xmg.tau)T(-0.5, 0.5)
 
     xso4[i] = xso4[1] * (1 + xso4.eps[i])
-    xso4.eps[i] ~ dnorm(xso4.eps[i - 1] * (xso4.phi ^ dt[i]), xso4.pc[i])T(-0.5, 0.5)
-    xso4.pc[i] = xso4.tau * ((1 - xso4.phi ^ 2) / (1 - xso4.phi ^ (2 * dt[i])))
+    xso4.eps[i] ~ dnorm(0, xso4.tau)T(-0.5, 0.5)
 
     dic[i] = dic[1] * (1 + dic.eps[i])
-    dic.eps[i] ~ dnorm(dic.eps[i - 1] * (dic.phi ^ dt[i]), dic.pc[i])T(-0.5, 0.5)
-    dic.pc[i] = dic.tau * ((1 - dic.phi ^ 2) / (1 - dic.phi ^ (2 * dt[i])))
+    dic.eps[i] ~ dnorm(0, dic.tau)T(-0.5, 0.5)
 
     d11Bsw[i] = d11Bsw[i - 1] + d11Bsw.eps[i]
-    d11Bsw.eps[i] ~ dnorm(d11Bsw.eps[i - 1] * (d11Bsw.phi ^ dt[i]), d11Bsw.pc[i])
-    d11Bsw.pc[i] = d11Bsw.tau * ((1 - d11Bsw.phi ^ 2) / (1 - d11Bsw.phi ^ (2 * dt[i])))
-    
+    d11Bsw.eps[i] ~ dnorm(0, d11Bsw.tau)
+
     d18Osw[i] = d18Osw[i - 1] + d18Osw.eps[i]
-    d18Osw.eps[i] ~ dnorm(d18Osw.eps[i - 1] * (d18Osw.phi ^ dt[i]), d18Osw.pc[i])
-    d18Osw.pc[i] = d18Osw.tau * ((1 - d18Osw.phi ^ 2) / (1 - d18Osw.phi ^ (2 * dt[i])))
+    d18Osw.eps[i] ~ dnorm(0, d18Osw.tau)
     
     d13Cepsilon[i] = d13Cepsilon[i - 1] + d13Cepsilon.eps[i]
-    d13Cepsilon.eps[i] ~ dnorm(d13Cepsilon.eps[i - 1] * (d13Cepsilon.phi ^ dt[i]), d13Cepsilon.pc[i])
-    d13Cepsilon.pc[i] = d13Cepsilon.tau * ((1 - d13Cepsilon.phi ^ 2) / (1 - d13Cepsilon.phi ^ (2 * dt[i])))
+    d13Cepsilon.eps[i] ~ dnorm(0, d13Cepsilon.tau)
 
     ## Secondary soil ----
     tsc[i] = tsc[i - 1] + tsc.eps[i]
-    tsc.eps[i] ~ dnorm(tsc.eps[i - 1] * (tsc.phi ^ dt[i]), tsc.pc[i])
-    tsc.pc[i] = tsc.tau * ((1 - tsc.phi ^ 2) / (1 - tsc.phi ^ (2 * dt[i])))
-    
+    tsc.eps[i] ~ dnorm(0, tsc.tau)
+
     ha[i] = max(min(ha.p[i], 0.6), 0.1)
     ha.p[i] = ha[i - 1] + ha.eps[i]
-    ha.eps[i] ~ dnorm(ha.eps[i - 1] * (ha.phi ^ dt[i]), ha.pc[i])
-    ha.pc[i] = ha.tau * ((1 - ha.phi ^ 2) / (1 - ha.phi ^ (2 * dt[i])))
-    
+    ha.eps[i] ~ dnorm(0, ha.tau)
+
     f_R[i] = max(min(f_R.p[i], 0.3), 0.02)
     f_R.p[i] = f_R[i - 1] + f_R.eps[i]
-    f_R.eps[i] ~ dnorm(f_R.eps[i - 1] * (f_R.phi ^ dt[i]), f_R.pc[i])
-    f_R.pc[i] = f_R.tau * ((1 - f_R.phi ^ 2) / (1 - f_R.phi ^ (2 * dt[i])))
+    f_R.eps[i] ~ dnorm(0, f_R.tau)
 
     d13Ca[i] = d13Ca[i - 1] + d13Ca.eps[i]
-    d13Ca.eps[i] ~ dnorm(d13Ca.eps[i - 1] * (d13Ca.phi ^ dt[i]), d13Ca.pc[i])
-    d13Ca.pc[i] = d13Ca.tau * ((1 - d13Ca.phi ^ 2) / (1 - d13Ca.phi ^ (2 * dt[i])))
-    
+    d13Ca.eps[i] ~ dnorm(0, d13Ca.tau)
+
     ETR[i] = max(min(ETR.p[i], 0.1), 0.01)
     ETR.p[i] = ETR[i - 1] + ETR.eps[i]
-    ETR.eps[i] ~ dnorm(ETR.eps[i - 1] * (ETR.phi ^ dt[i]), ETR.pc[i])
-    ETR.pc[i] = ETR.tau * ((1 - ETR.phi ^ 2) / (1 - ETR.phi ^ (2 * dt[i])))
+    ETR.eps[i] ~ dnorm(0, ETR.tau)
   }
 
   # Time dependent variables, ts parameters ----
   tempC.tau ~ dgamma(10, 5)
-  tempC.phi ~ dbeta(2, 5)
-  
+
   pco2.tau ~ dgamma(5, 5e-7)
-  pco2.phi ~ dbeta(2, 5)
-  
+
   MAT_off.tau ~ dgamma(10, 1)
-  MAT_off.phi ~ dbeta(2, 5)
-  
+
   PCQ_to.tau ~ dgamma(10, 1)
-  PCQ_to.phi ~ dbeta(2, 5)
-  
+
   MAP.tau ~ dgamma(10, 1e-1)
-  MAP.phi ~ dbeta(2, 5)
-  
+
   PCQ_pf.tau ~ dgamma(10, 1e-3)
-  PCQ_pf.phi ~ dbeta(2, 5)
-  
+
   sal.tau ~ dgamma(10, 1e-2)
-  sal.phi ~ dbeta(10, 2)
-  
+
   xca.tau ~ dgamma(10, 1e-2)
-  xca.phi ~ dbeta(10, 2)
-  
+
   xmg.tau ~ dgamma(10, 5e-2)
-  xmg.phi ~ dbeta(10, 2)
-  
+
   xso4.tau ~ dgamma(10, 1e-2)
-  xso4.phi ~ dbeta(10, 2)
-  
+
   dic.tau ~ dgamma(10, 1e-2)
-  dic.phi ~ dbeta(5, 2)
-  
+
   d11Bsw.tau ~ dgamma(10, 1e-2)
-  d11Bsw.phi ~ dbeta(10, 2)
-  
+
   d18Osw.tau ~ dgamma(10, 1e-2)
-  d18Osw.phi ~ dbeta(10, 2)
-  
+
   d13Cepsilon.tau ~ dgamma(10, 1e-2)
-  d13Cepsilon.phi ~ dbeta(5, 2)
-  
+
   tsc.tau ~ dgamma(10, 1e-5)
-  tsc.phi ~ dbeta(2, 5)
-  
+
   ha.tau ~ dgamma(10, 1e-4)
-  ha.phi ~ dbeta(2, 5)
-  
+
   f_R.tau ~ dgamma(10, 1e-5)
-  f_R.phi ~ dbeta(2, 5)
-  
+
   d13Ca.tau ~ dgamma(10, 1e-1)
-  d13Ca.phi ~ dbeta(2, 5)
-  
+
   ETR.tau ~ dgamma(10, 1e-5)
-  ETR.phi ~ dbeta(2, 5)
 
   # Time dependent variables, initial conditions ----
   ## Derived values ----
