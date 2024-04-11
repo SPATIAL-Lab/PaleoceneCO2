@@ -8,11 +8,14 @@ ts$ts = ts$ts[-1]
 load("bigout/ts4e3.rda")
 load("bigout/tsm4e3.rda")
 
-plot(ts$ts, post.ts$BUGSoutput$median$pCO2, type = "l")
 plot(ts$ts, post.ts$BUGSoutput$mean$pCO2, type = "l")
 plot(ts$ts, post.ts$BUGSoutput$mean$MAP, type = "l")
-plot(ts$ts, post.ts$BUGSoutput$mean$tempC, type = "l")
+plot(ts$ts, post.ts$BUGSoutput$mean$PPCQ, type = "l")
 plot(ts$ts, post.ts$BUGSoutput$mean$S_z, type = "l")
+plot(ts$ts, post.ts$BUGSoutput$mean$tempC, type = "l")
+plot(ts$ts, post.ts$BUGSoutput$mean$TmPCQ, type = "l")
+
+
 x = ts$ts[ts$ts_ind[[9]]]
 points(x, rep(150, length(x)))
 x = ts$ts[ts$ts_ind[[10]]]

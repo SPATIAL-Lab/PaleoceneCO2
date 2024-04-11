@@ -452,7 +452,7 @@ model{
   d11Bsw.eps[1] = 0
   d18Osw[1] ~ dnorm(-1.2, 1 / 0.1 ^ 2) # seawater d18O, ppt
   d18Osw.eps[1] = 0
-  d13Cepsilon[1] ~ dnorm(10, 1 / 0.5 ^ 2) # offset between foram calcite and d13Catm
+  d13Cepsilon[1] ~ dnorm(11, 1 / 0.5 ^ 2) # offset between foram calcite and d13Catm
   d13Cepsilon.eps[1] = 0
   
   ## Secondary soil ----

@@ -54,7 +54,7 @@ d = list(ai = ages, dt = dt,
          D47c.obs = D47c[, 2:3], D47c.ai = D47c.ai)
 
 parms = c("tempC", "pCO2", "MAT", "MAP", "TmPCQ", "PPCQ", "d18.p", 
-          "z_m", "d18O.s", "AET_PCQ", "S_z", "d13Cr",
+          "z_m", "d18O.s", "AET_PCQ", "S_z", "d13Cr", "d13Cepsilon",
           "pH", "d11Bsw", "sal", "d18Osw.sc", "d18Of.pr", "mgcasw",
           "d18Of", "d13Cf", "mgcaf", "d11BGrub", "d11BTsac",
           "d13Cc", "d18Oc", "D47c")
