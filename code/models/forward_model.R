@@ -290,7 +290,7 @@ fm = function(vars){
   d18Oc = (R18.c / R18.VPDB - 1) * 1000
   
   # Cap-47
-  D47 = 0.0422e6 / Tsoil.K^2 + 0.215
+  D47 = 0.0417e6 / Tsoil.K^2 + 0.139
   
   results = data.frame("d11Bb" = rep(d11Bb), "d18Of" = rep(d18Of), 
                        "mgcaf" = rep(mgcaf), "d13Cc" = rep(d13Cc), 

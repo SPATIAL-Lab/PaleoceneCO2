@@ -49,3 +49,7 @@ plot.jpi = function(x, y, n = 500, ...){
     lines(x, y[i,], col = rgb(0, 0, 0, 0.1))
   }
 }
+
+get.ind = function(obs, ages){
+  ai = sapply(obs, function(x){max(which(x >= ages))})
+}

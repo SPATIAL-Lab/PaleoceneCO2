@@ -127,7 +127,7 @@ model{
   alpha18_c_w_eq = exp((1.61e4 / Tsoil.K - 24.6) / 1000) # Wostbrock (2020)
   R18.c = R18.s * alpha18_c_w_eq
   d18Oc = (R18.c / R18.VPDB - 1) * 1000
-  D47c = 0.0422e6 / Tsoil.K^2 + 0.215
+  D47c = 0.0417e6 / Tsoil.K ^ 2 + 0.139
   
   # Marine carbonate system ----
   ## Equilibrium constants ----

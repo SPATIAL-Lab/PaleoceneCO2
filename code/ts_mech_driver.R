@@ -56,9 +56,8 @@ parms = c("tempC", "pCO2", "MAT", "MAP", "TmPCQ", "PPCQ", "d18.p", "wrng",
           "d18Of", "d13Cf", "mgcaf", "d11BGrub", "d11BTsac",
           "d13Cc", "d18Oc", "D47c")
 
-p = proc.time()
-post.tsm = jags(d, NULL, parms, "code/models/time_series_mech.R",
-                n.iter = 2e2, n.chains = 1)
-proc.time() - p
 
-save(post.tsm, file = "bigout/tsm2e4.rda")
+system.time({post.tsm = jags.parallel(d, NULL, parms, "code/models/time_series_mech.R",
+                n.iter = 2e3, n.chains = 3)})
+
+save(post.tsm, file = "bigout/tsm2e3.rda")

@@ -11,7 +11,7 @@ td$d13C.stdev = sqrt(0.4 ^ 2 + td$d13C.stdev^2)
 
 ## Remove PETM and earliest terrestrial data, make ages negative
 md = md[md$age <= 55.741 | md$age >= 55.942,]
-td = td[td$Age <= 59 & td$Age >= 53, ]
+td = td[td$Age <= 65 & td$Age >= 53, ]
 md$age = -md$age
 td$Age = -td$Age
 
@@ -32,23 +32,26 @@ d13Cc = na.exclude(td[c("Age", "d13C", "d13C.stdev")])
 d18Oc = na.exclude(td[c("Age", "d18O", "d18O.stdev")])
 D47c = na.exclude(td[c("Age", "D47", "D47.stderr")])
 
-ages = ts(d18Of$age, d13Cf$age, mgcaf$age, d11BGrub$age, d11BTsac$age,
-          d13Cc$Age, d18Oc$Age, D47c$Age,
-          c(d18Of$age, d13Cf$age, mgcaf$age, d11BGrub$age, d11BTsac$age),
-          c(d13Cc$Age, d18Oc$Age, D47c$Age),
-          seq(-59, -53, by = 0.2))
-tsi = ages$ts_ind
+dt = 0.5
+ages = seq(-66, -53, by = dt)
+d18Of.ai = get.ind(d18Of$age, ages)
+d13Cf.ai = get.ind(d13Cf$age, ages)
+mgcaf.ai = get.ind(mgcaf$age, ages)
+d11BGrub.ai = get.ind(d11BGrub$age, ages)
+d11BTsac.ai = get.ind(d11BTsac$age, ages)
+d18Oc.ai = get.ind(d18Oc$Age, ages)
+d13Cc.ai = get.ind(d13Cc$Age, ages)
+D47c.ai = get.ind(D47c$Age, ages)
 
-d = list(ai = ages$ts, 
-         d18Of.obs = d18Of[, 2:3], d18Of.ai = match(tsi[[1]], tsi[[9]]),
-         d13Cf.obs = d13Cf[, 2:3], d13Cf.ai = match(tsi[[2]], tsi[[9]]),
-         mgcaf.obs = mgcaf[, 2:3], mgcaf.ai = match(tsi[[3]], tsi[[9]]),
-         d11BGrub.obs = d11BGrub[, 2:3], d11BGrub.ai = match(tsi[[4]], tsi[[9]]),
-         d11BTsac.obs = d11BTsac[, 2:3], d11BTsac.ai = match(tsi[[5]], tsi[[9]]),
-         d13Cc.obs = d13Cc[, 2:3], d13Cc.ai = match(tsi[[6]], tsi[[10]]),
-         d18Oc.obs = d18Oc[, 2:3], d18Oc.ai = match(tsi[[7]], tsi[[10]]),
-         D47c.obs = D47c[, 2:3], D47c.ai = match(tsi[[8]], tsi[[10]]),
-         mar.ai = tsi[[9]], ter.ai = tsi[[10]])
+d = list(ai = ages, dt = dt,
+         d18Of.obs = d18Of[, 2:3], d18Of.ai = d18Of.ai,
+         d13Cf.obs = d13Cf[, 2:3], d13Cf.ai = d13Cf.ai,
+         mgcaf.obs = mgcaf[, 2:3], mgcaf.ai = mgcaf.ai,
+         d11BGrub.obs = d11BGrub[, 2:3], d11BGrub.ai = d11BGrub.ai,
+         d11BTsac.obs = d11BTsac[, 2:3], d11BTsac.ai = d11BTsac.ai,
+         d13Cc.obs = d13Cc[, 2:3], d13Cc.ai = d13Cc.ai,
+         d18Oc.obs = d18Oc[, 2:3], d18Oc.ai = d18Oc.ai,
+         D47c.obs = D47c[, 2:3], D47c.ai = D47c.ai)
 
 parms = c("tempC", "pCO2", "MAT", "MAP", "TmPCQ", "PPCQ", "d18.p", 
           "z_m", "d18O.s", "AET_PCQ", "S_z", "d13Cr",
@@ -56,7 +59,7 @@ parms = c("tempC", "pCO2", "MAT", "MAP", "TmPCQ", "PPCQ", "d18.p",
           "d18Of", "d13Cf", "mgcaf", "d11BGrub", "d11BTsac",
           "d13Cc", "d18Oc", "D47c")
 
-system.time({post.ts = jags.parallel(d, NULL, parms, "code/models/time_series.R", 
+system.time({post.ts = jags.parallel(d, NULL, parms, "code/models/time_series_discrete.R", 
                         n.iter = 2e3, n.chains = 3)})
 
 save(post.ts, file = "bigout/ts2e3.rda")

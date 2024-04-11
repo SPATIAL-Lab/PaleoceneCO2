@@ -10,12 +10,15 @@ load("bigout/tsm4e3.rda")
 
 plot(ts$ts, post.ts$BUGSoutput$median$pCO2, type = "l")
 plot(ts$ts, post.ts$BUGSoutput$mean$pCO2, type = "l")
+plot(ts$ts, post.ts$BUGSoutput$mean$MAP, type = "l")
+plot(ts$ts, post.ts$BUGSoutput$mean$tempC, type = "l")
+plot(ts$ts, post.ts$BUGSoutput$mean$S_z, type = "l")
 x = ts$ts[ts$ts_ind[[9]]]
 points(x, rep(150, length(x)))
 x = ts$ts[ts$ts_ind[[10]]]
 points(x, rep(200, length(x)), col = "red")
 
-plot.jpi(ts$ts, post.ts$BUGSoutput$sims.list$pCO2, xlim = c(-60, -53))
+plot.jpi(ts$ts, post.ts$BUGSoutput$sims.list$pCO2, xlim = c(-65, -53))
 plot.jpi(ts$ts, post.tsm$BUGSoutput$sims.list$pCO2, xlim = c(-60, -53))
 
 plot.jpi(ts$ts, post.ts$BUGSoutput$sims.list$pCO2, xlim = c(-60, -53))
