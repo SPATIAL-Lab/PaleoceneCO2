@@ -7,11 +7,6 @@ model{
   }
   d18Of.sd ~ dgamma(5, 10)
   
-  for(i in 1:length(d13Cf.ai)){
-    d13Cf.obs[i, 1] ~ dnorm(d13Cf[d13Cf.ai[i]], d13Cf.pre[i])
-    d13Cf.pre[i] = 1 / (d13Cf.obs[i, 2] ^ 2 + d13Cf.sd ^ 2)
-  }
-  d13Cf.sd ~ dgamma(5, 10)
   
   for(i in 1:length(mgcaf.ai)){
     mgcaf.obs[i, 1] ~ dnorm(mgcaf[mgcaf.ai[i]], mgcaf.pre[i])
@@ -23,12 +18,18 @@ model{
     d11BGrub.obs[i, 1] ~ dnorm(d11BGrub[d11BGrub.ai[i]], d11BGrub.pre[i])
     d11BGrub.pre[i] = 1 / (d11BGrub.obs[i, 2] ^ 2 + d11Bf.sd ^ 2)
   }
-
+  
   for(i in 1:length(d11BTsac.ai)){
     d11BTsac.obs[i, 1] ~ dnorm(d11BTsac[d11BTsac.ai[i]], d11BTsac.pre[i])
     d11BTsac.pre[i] = 1 / (d11BTsac.obs[i, 2] ^ 2 + d11Bf.sd ^ 2)
   }
   d11Bf.sd ~ dgamma(3, 10)
+  
+  for(i in 1:length(d13Cf.ai)){
+    d13Cf.obs[i, 1] ~ dnorm(d13Cf[d13Cf.ai[i]], d13Cf.pre[i])
+    d13Cf.pre[i] = 1 / (d13Cf.obs[i, 2] ^ 2 + d13Cf.sd ^ 2)
+  }
+  d13Cf.sd ~ dgamma(5, 10)
   
   for(i in 1:length(d13Cc.ai)){
     d13Cc.obs[i, 1] ~ dnorm(d13Cc[d13Cc.ai[i]], d13Cc.pre[i])
@@ -46,7 +47,7 @@ model{
     D47c.obs[i, 1] ~ dnorm(D47c[D47c.ai[i]], D47c.pre[i])
     D47c.pre[i] = 1 / (D47c.obs[i, 2] ^ 2 + D47c.sd ^ 2)
   }
-  D47c.sd ~ dgamma(5, 1000)
+  D47c.sd ~ dgamma(5, 5000)
   
   for(i in 1:length(ai)){  
     # Soil carbonate ----
@@ -60,13 +61,6 @@ model{
     Tsoil.K[i] = Tsoil[i] + 273.15
     
     ## Potential Evapotranspiration - Hargreaves and Samani (1982) and Turc (1961)
-    PET_A_D.1[i] = ifelse(ha[i] < 0.5, 
-                          0.013 * (MAT[i] / (MAT[i] + 15)) * (23.885 * Rs + 50) * (1 + ((0.5 - ha[i]) / 0.7)),
-                          0.013 * (MAT[i] / (MAT[i] + 15)) * (23.885 * Rs + 50))
-    PET_A_D[i] = max(PET_A_D.1[i], 0.01)
-    PET_A_A[i] = PET_A_D[i] * 365
-    
-    ## PET_PCQ
     Tair_PCQ[i] = MAT[i] + PCQ_to[i]
     PET_PCQ_D.1[i] = ifelse(ha[i] < 0.5, 
                             0.013 * (Tair_PCQ[i] / (Tair_PCQ[i] + 15)) * (23.885 * Rs + 50) * (1 + ((0.5 - ha[i]) / 0.7)),
@@ -265,7 +259,8 @@ model{
     ## Derived values ----
     pCO2[i] = pco2[i] * 1e6 # atmospheric CO2 mixing ratio, ppm
     MAT[i] = tempC[i] + MAT_off[i] # mean annual terrestrial site air temperature, C 
-    d18.p[i] = -15 + 0.58 * MAT[i] # Precipitation d18O, ppt
+    d18.p[i] = -15 + 0.58 * (MAT[i] * (1 - PCQ_pf[i]) +
+                               TmPCQ[i] * PCQ_pf[i]) # Precipitation d18O, ppt
     PPCQ[i] = MAP[i] * PCQ_pf[i] 
     TmPCQ[i] = MAT[i] + PCQ_to[i] 
     temp[i] = tempC[i] + 273.15
@@ -289,7 +284,7 @@ model{
     PCQ_to.eps[i] ~ dnorm(PCQ_to.eps[i - 1] * (PCQ_to.phi ^ dt), PCQ_to.pc[i])
     PCQ_to.pc[i] = PCQ_to.tau * ((1 - PCQ_to.phi ^ 2) / (1 - PCQ_to.phi ^ (2 * dt)))
     
-    MAP[i] = MAP[1] * (1 + MAP.eps[i])
+    MAP[i] = MAP[i - 1] * (1 + MAP.eps[i])
     MAP.eps[i] ~ dnorm(MAP.eps[i - 1] * (MAP.phi ^ dt), MAP.pc[i])T(-1,)
     MAP.pc[i] = MAP.tau * ((1 - MAP.phi ^ 2) / (1 - MAP.phi ^ (2 * dt)))
     
@@ -369,7 +364,7 @@ model{
   PCQ_to.tau ~ dgamma(10, 1)
   PCQ_to.phi ~ dbeta(2, 5)
   
-  MAP.tau ~ dgamma(10, 1e-1)
+  MAP.tau ~ dgamma(10, 2e-3)
   MAP.phi ~ dbeta(2, 5)
   
   PCQ_pf.tau ~ dgamma(10, 1e-3)
@@ -402,14 +397,14 @@ model{
   tsc.tau ~ dgamma(10, 1e-5)
   tsc.phi ~ dbeta(2, 5)
   
-  ha.tau ~ dgamma(10, 1e-4)
+  ha.tau ~ dgamma(10, 1e-2)
   ha.phi ~ dbeta(2, 5)
   
   f_R.tau ~ dgamma(10, 1e-5)
   f_R.phi ~ dbeta(2, 5)
   
   d13Ca.tau ~ dgamma(10, 1e-1)
-  d13Ca.phi ~ dbeta(2, 5)
+  d13Ca.phi ~ dbeta(5, 2)
   
   ETR.tau ~ dgamma(10, 1e-5)
   ETR.phi ~ dbeta(2, 5)
@@ -418,23 +413,24 @@ model{
   ## Derived values ----
   pCO2[1] = pco2[1] * 1e6 # atmospheric CO2 mixing ratio, ppm
   MAT[1] = tempC[1] + MAT_off[1] # mean annual terrestrial site air temperature, C 
-  d18.p[1] = -15 + 0.58 * MAT[1] # Precipitation d18O, ppt
+  d18.p[1] = -17 + 0.58 * (MAT[1] * (1 - PCQ_pf[1]) +
+                             TmPCQ[1] * PCQ_pf[1]) + MAP[1] / 250 # Precipitation d18O, ppt
   PPCQ[1] = MAP[1] * PCQ_pf[1] 
   TmPCQ[1] = MAT[1] + PCQ_to[1] 
   temp[1] = tempC[1] + 273.15
   
   ## Primary environmental ----
-  tempC[1] ~ dnorm(23, 1 / 3 ^ 2) # surface water temperature, C
+  tempC[1] ~ dunif(20, 28) # surface water temperature, C
   tempC.eps[1] = 0
-  pco2[1] ~ dnorm(0.000875, 1 / 0.0001)T(0.0001, 0.002) # atmospheric CO2 mixing ratio
+  pco2[1] ~ dunif(0.0005, 0.001) # atmospheric CO2 mixing ratio
   pco2.eps[1] = 0
-  MAT_off[1] ~ dnorm(-18, 1 / 4 ^ 2) # offset between terrestrial and marine temperatures, C
+  MAT_off[1] ~ dunif(-10, 3) # offset between terrestrial and marine temperatures, C
   MAT_off.eps[1] = 0
-  PCQ_to[1] ~ dnorm(15, 1 / 2 ^ 2) # PCQ temperature offset, C
+  PCQ_to[1] ~ dunif(-2, 14) # PCQ temperature offset, C
   PCQ_to.eps[1] = 0
-  MAP[1] ~ dnorm(500, 1/50 ^ 2)T(100,) # mean annual terrestrial site precipitation, mm
+  MAP[1] ~ dunif(500, 1200) # mean annual terrestrial site precipitation, mm
   MAP.eps[1] = 0
-  PCQ_pf[1] ~ dbeta(0.5 / 0.9, 5) # PCQ precipitation fraction
+  PCQ_pf[1] ~ dunif(0.05, 0.2) # PCQ precipitation fraction
   PCQ_pf.eps[1] = 0
   
   ## Secondary marine ----
@@ -452,17 +448,18 @@ model{
   d11Bsw.eps[1] = 0
   d18Osw[1] ~ dnorm(-1.2, 1 / 0.1 ^ 2) # seawater d18O, ppt
   d18Osw.eps[1] = 0
-  d13Cepsilon[1] ~ dnorm(11, 1 / 0.5 ^ 2) # offset between foram calcite and d13Catm
+  d13Cepsilon[1] ~ dnorm(12, 1 / 0.5 ^ 2) # offset between foram calcite and d13Catm
   d13Cepsilon.eps[1] = 0
   
   ## Secondary soil ----
   tsc[1] ~ dbeta(0.25 * 1000 / 0.75, 1000) # seasonal offset of PCQ for thermal diffusion
   tsc.eps[1] = 0
-  ha[1] ~ dbeta(0.35 * 500 / 0.65, 500) # PCQ atmospheric humidity
+  ha[1] ~ dunif(0.2, 0.5)
+  #  ha[1] ~ dbeta(0.35 * 500 / 0.65, 500) # PCQ atmospheric humidity
   ha.eps[1] = 0
   f_R[1] ~ dbeta(0.15 * 500 / 0.85, 500) # ratio of PCQ to mean annual respiration rate
   f_R.eps[1] = 0
-  d13Ca[1] ~ dnorm(-6.5, 1 / 1 ^ 2) # Atmospheric d13C, ppt
+  d13Ca[1] ~ dnorm(-9, 1 / 1 ^ 2) # Atmospheric d13C, ppt
   d13Ca.eps[1] = 0
   ETR[1] ~ dbeta(0.06 * 1000 / 0.94, 1000) # Soil evaporation / AET
   ETR.eps[1] = 0
@@ -483,10 +480,10 @@ model{
   bTsac = 2.04
   
   ## Terrestrial ----
-  lat ~ dunif(32, 38) # terrestrial site latitude
+  lat = 30 # terrestrial site latitude
   Ra = 42.608 - 0.3538 * abs(lat) # total radiation at the top of the atmosphere
   Rs = Ra * 0.16 * sqrt(12) # daily temperature range assumed to be 12
-  L ~ dgamma(40, 1) # mean rooting depth, cm
+  L ~ dgamma(50, 1) # mean rooting depth, cm
   k = L / 2 / log(2)   # Respiration characteristic production depth (cm) - Quade (2007)
   pore ~ dbeta(0.35 * 100 / 0.65, 100)T(0.06,) # soil porosity
   tort ~ dbeta(0.7 * 100 / 0.3, 100) # soil tortuosity

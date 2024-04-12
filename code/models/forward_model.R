@@ -35,7 +35,9 @@ fm = function(vars){
   ## Derived values
   pCO2 = pco2 * 1e6 # atmospheric CO2 mixing ratio, ppm
   MAT = tempC + MAT_off # mean annual terrestrial site air temperature, C 
-  d18.p = -15 + 0.58 * MAT # Precipitation d18O, ppt
+  d18.p = -15 + 0.58 * (MAT + PCQ_to)
+#  d18.p = -15 + 0.58 * (MAT * (1 - PCQ_pf) + 
+#                          (MAT + PCQ_to) * PCQ_pf)# Precipitation d18O, ppt
   
   ## Constants
   R = 83.131 # constant (cm^3 bar mol^-1 K^-1)
@@ -189,11 +191,6 @@ fm = function(vars){
       0.013 * (t / (t + 15)) * (23.885 * Rs + 50)
     }
   }
-  PET_A_D = as.vector(sapply(ha, FUN = PET, t = MAT))
-  PET_A_D = pmax(PET_A_D, 0.01)
-  PET_A_A = PET_A_D * 365
-  
-  ## PET_PCQ
   Tair_PCQ = MAT + PCQ_to
   PET_PCQ_D = as.vector(sapply(ha, FUN = PET, t = Tair_PCQ))
   PET_PCQ_D = pmax(PET_PCQ_D, 0.01)
@@ -294,7 +291,8 @@ fm = function(vars){
   
   results = data.frame("d11Bb" = rep(d11Bb), "d18Of" = rep(d18Of), 
                        "mgcaf" = rep(mgcaf), "d13Cc" = rep(d13Cc), 
-                       "d18Oc" = rep(d18Oc), "D47" = rep(D47))
+                       "d18Oc" = rep(d18Oc), "D47" = rep(D47),
+                       "d18Os" = rep(d18O.s))
 }
 
 

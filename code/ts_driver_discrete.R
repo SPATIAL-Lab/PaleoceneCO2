@@ -1,5 +1,6 @@
 library(R2jags)
 source("code/constructors.R")
+source("code/helpers.R")
 
 ## Read data
 td = read.csv("data/BBNP_data.csv")
@@ -57,9 +58,9 @@ parms = c("tempC", "pCO2", "MAT", "MAP", "TmPCQ", "PPCQ", "d18.p",
           "z_m", "d18O.s", "AET_PCQ", "S_z", "d13Cr", "d13Cepsilon",
           "pH", "d11Bsw", "sal", "d18Osw.sc", "d18Of.pr", "mgcasw",
           "d18Of", "d13Cf", "mgcaf", "d11BGrub", "d11BTsac",
-          "d13Cc", "d18Oc", "D47c")
+          "d13Cc", "d18Oc", "D47c", "d13Ca", "ha")
 
 system.time({post.ts = jags.parallel(d, NULL, parms, "code/models/time_series_discrete.R", 
-                        n.iter = 2e3, n.chains = 3)})
+                        n.iter = 1e5, n.chains = 3)})
 
-save(post.ts, file = "bigout/ts2e3.rda")
+save(post.ts, file = "bigout/ts1e5.rda")
