@@ -54,13 +54,16 @@ d = list(ai = ages, dt = dt,
          d18Oc.obs = d18Oc[, 2:3], d18Oc.ai = d18Oc.ai,
          D47c.obs = D47c[, 2:3], D47c.ai = D47c.ai)
 
-parms = c("tempC", "pCO2", "MAT", "MAP", "TmPCQ", "PPCQ", "d18.p", 
-          "z_m", "d18O.s", "AET_PCQ", "S_z", "d13Cr", "d13Cepsilon",
+parms = c("tempC", "pCO2", "MAT", "MAP", "TmPCQ", "PPCQ", "d18.p", "wrng",
+          "z_m", "d18O.s", "AET_PCQ", "S_z", "d13Cr", "ha", "orgEff", "sens", "wrngK",
           "pH", "d11Bsw", "sal", "d18Osw.sc", "d18Of.pr", "mgcasw",
-          "d18Of", "d13Cf", "mgcaf", "d11BGrub", "d11BTsac",
-          "d13Cc", "d18Oc", "D47c", "d13Ca", "ha")
+          "d18Of", "d13Cf", "mgcaf", "d11BGrub", "d11BTsac", "d13Ca",
+          "d13Cc", "d18Oc", "D47c")
 
-system.time({post.tsd = jags.parallel(d, NULL, parms, "code/models/time_series_discrete.R", 
-                        n.iter = 1e5, n.chains = 3)})
+system.time({
+  post.tsmd = jags.parallel(d, NULL, parms, 
+                            "code/models/time_series_mech_discrete.R",
+                            n.iter = 1e5, n.chains = 3)
+  })
 
-save(post.tsd, file = "bigout/tsd1e5.rda")
+save(post.tsmd, file = "bigout/tsmd1e5.rda")

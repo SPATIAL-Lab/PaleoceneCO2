@@ -5,7 +5,7 @@ ts = ai()
 ts$ts = ts$ts[-1]
 
 #load("bigout/tsf4e3.rda")
-load("bigout/ts4e3.rda")
+load("bigout/ts1e5.rda")
 load("bigout/tsm4e3.rda")
 
 plot(ages, post.ts$BUGSoutput$mean$pCO2, type = "l")
@@ -25,6 +25,8 @@ plot(ages, post.ts$BUGSoutput$mean$d11BGrub, type = "l")
 points(d11BGrub[, 1:2])
 plot(ages, post.ts$BUGSoutput$mean$d11BTsac, type = "l")
 points(d11BTsac[, 1:2])
+plot(ages, post.ts$BUGSoutput$mean$mgcaf, type = "l")
+points(mgcaf[, 1:2])
 plot(ages, post.ts$BUGSoutput$mean$d13Cf, type = "l")
 points(d13Cf[, 1:2])
 plot(ages, post.ts$BUGSoutput$mean$d13Cc, type = "l")

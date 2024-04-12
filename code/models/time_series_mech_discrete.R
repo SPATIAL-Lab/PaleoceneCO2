@@ -1,5 +1,4 @@
 model{
-
   # Data model ----
   for(i in 1:length(d18Of.ai)){
     d18Of.obs[i, 1] ~ dnorm(d18Of[d18Of.ai[i]], d18Of.pre[i])
@@ -148,7 +147,7 @@ model{
     R18.c[i] = R18.s[i] * alpha18_c_w_eq[i]
     d18Oc[i] = (R18.c[i] / R18.VPDB - 1) * 1000
     D47c[i] = 0.0417e6 / Tsoil.K[i] ^ 2 + 0.139
-
+    
     # Marine carbonate system ----
     ## Equilibrium constants ----
     Ks1m_st[i] = exp(2.83655 - 2307.1266 / temp[i] - 1.5529413 * 
@@ -180,7 +179,7 @@ model{
                       (sal[i] ^ 0.5) - 0.01615 * sal[i])
     K0[i] = exp(9345.17 / temp[i] - 60.2409 + 23.3585 * (log(temp[i] / 100)) + 
                   sal[i] * (0.023517 - 0.00023656 * temp[i] + 
-                                      0.0047036 * ((temp[i] / 100) ^ 2)))
+                              0.0047036 * ((temp[i] / 100) ^ 2)))
     
     ### Adjust for the effect of pressure (Millero 1995)
     delV1[i] = (-25.50) + 0.1271 * tempC[i]
@@ -255,7 +254,6 @@ model{
   
   # Time dependent variables, time series ----
   for(i in 2:length(ai)){
-
     ## Derived values ----
     pCO2[i] = pco2[i] * 1e6 # atmospheric CO2 mixing ratio, ppm
     MAT[i] = tempC[i] + MAT_off[i] # mean annual terrestrial site air temperature, C 
@@ -266,8 +264,8 @@ model{
     temp[i] = tempC[i] + 273.15
     
     ## Primary environmental ----
-    tempC[i] = max(tempC.p[i], 0)
-    tempC.p[i] = tempC[i - 1] + tempC.eps[i]
+    ### Temperature coupled to pco2 through climate sensitivity
+    tempC[i] = tempC[1] + sens * log(pco2[i] / pco2[1]) / log(2) + tempC.eps[i]
     tempC.eps[i] ~ dnorm(tempC.eps[i - 1] * (tempC.phi ^ dt), tempC.pc[i])
     tempC.pc[i] = tempC.tau * ((1 - tempC.phi ^ 2) / (1 - tempC.phi ^ (2 * dt)))
     
@@ -279,7 +277,7 @@ model{
     MAT_off[i] = MAT_off[i - 1] + MAT_off.eps[i]
     MAT_off.eps[i] ~ dnorm(MAT_off.eps[i - 1] * (MAT_off.phi ^ dt), MAT_off.pc[i])
     MAT_off.pc[i] = MAT_off.tau * ((1 - MAT_off.phi ^ 2) / (1 - MAT_off.phi ^ (2 * dt)))
-
+    
     PCQ_to[i] = PCQ_to[i - 1] + PCQ_to.eps[i]
     PCQ_to.eps[i] ~ dnorm(PCQ_to.eps[i - 1] * (PCQ_to.phi ^ dt), PCQ_to.pc[i])
     PCQ_to.pc[i] = PCQ_to.tau * ((1 - PCQ_to.phi ^ 2) / (1 - PCQ_to.phi ^ (2 * dt)))
@@ -295,24 +293,18 @@ model{
     
     ## Secondary marine ----
     sal[i] = sal[1] * (1 + sal.eps[i])
-    sal.eps[i] ~ dnorm(sal.eps[i - 1] * (sal.phi ^ dt), sal.pc[i])T(-0.5, 0.5)
-    sal.pc[i] = sal.tau * ((1 - sal.phi ^ 2) / (1 - sal.phi ^ (2 * dt)))   
-    
     xca[i] = xca[1] * (1 + xca.eps[i])
-    xca.eps[i] ~ dnorm(xca.eps[i - 1] * (xca.phi ^ dt), xca.pc[i])T(-0.5, 0.5)
-    xca.pc[i] = xca.tau * ((1 - xca.phi ^ 2) / (1 - xca.phi ^ (2 * dt)))
-    
     xmg[i] = xmg[1] * (1 + xmg.eps[i])
-    xmg.eps[i] ~ dnorm(xmg.eps[i - 1] * (xmg.phi ^ dt), xmg.pc[i])T(-0.5, 0.5)
-    xmg.pc[i] = xmg.tau * ((1 - xmg.phi ^ 2) / (1 - xmg.phi ^ (2 * dt)))
-
     xso4[i] = xso4[1] * (1 + xso4.eps[i])
-    xso4.eps[i] ~ dnorm(xso4.eps[i - 1] * (xso4.phi ^ dt), xso4.pc[i])T(-0.5, 0.5)
-    xso4.pc[i] = xso4.tau * ((1 - xso4.phi ^ 2) / (1 - xso4.phi ^ (2 * dt)))
-
     dic[i] = dic[1] * (1 + dic.eps[i])
-    dic.eps[i] ~ dnorm(dic.eps[i - 1] * (dic.phi ^ dt), dic.pc[i])T(-0.5, 0.5)
-    dic.pc[i] = dic.tau * ((1 - dic.phi ^ 2) / (1 - dic.phi ^ (2 * dt)))
+
+    sal.eps[i] ~ dnorm(wrng[i], 1 / 1e-6 ^ 2)T(-0.1, 0.1)
+    xca.eps[i] ~ dnorm(wrng[i] * 5, 1 / 1e-5 ^ 2)T(-0.2, 0.2)
+    xmg.eps[i] ~ dnorm(wrng[i], 1 / 1e-6 ^ 2)T(-0.1, 0.1)
+    xso4.eps[i] ~ dnorm(wrng[i], 1 / 1e-6 ^ 2)T(-0.1, 0.1)
+    dic.eps[i] ~ dnorm(-wrng[i] * 5, 1 / 1e-5 ^ 2)T(-0.2, 0.2)
+    
+    wrng[i] = (tempC[i] - tempC[1]) * wrngK
 
     d11Bsw[i] = d11Bsw[i - 1] + d11Bsw.eps[i]
     d11Bsw.eps[i] ~ dnorm(d11Bsw.eps[i - 1] * (d11Bsw.phi ^ dt), d11Bsw.pc[i])
@@ -325,7 +317,7 @@ model{
     d13Cepsilon[i] = d13Cepsilon[i - 1] + d13Cepsilon.eps[i]
     d13Cepsilon.eps[i] ~ dnorm(d13Cepsilon.eps[i - 1] * (d13Cepsilon.phi ^ dt), d13Cepsilon.pc[i])
     d13Cepsilon.pc[i] = d13Cepsilon.tau * ((1 - d13Cepsilon.phi ^ 2) / (1 - d13Cepsilon.phi ^ (2 * dt)))
-
+    
     ## Secondary soil ----
     tsc[i] = tsc[i - 1] + tsc.eps[i]
     tsc.eps[i] ~ dnorm(tsc.eps[i - 1] * (tsc.phi ^ dt), tsc.pc[i])
@@ -340,8 +332,8 @@ model{
     f_R.p[i] = f_R[i - 1] + f_R.eps[i]
     f_R.eps[i] ~ dnorm(f_R.eps[i - 1] * (f_R.phi ^ dt), f_R.pc[i])
     f_R.pc[i] = f_R.tau * ((1 - f_R.phi ^ 2) / (1 - f_R.phi ^ (2 * dt)))
-
-    d13Ca[i] = d13Ca[i - 1] + d13Ca.eps[i]
+    
+    d13Ca[i] = d13Ca[i - 1] - pco2.eps[i] * orgEff + d13Ca.eps[i]
     d13Ca.eps[i] ~ dnorm(d13Ca.eps[i - 1] * (d13Ca.phi ^ dt), d13Ca.pc[i])
     d13Ca.pc[i] = d13Ca.tau * ((1 - d13Ca.phi ^ 2) / (1 - d13Ca.phi ^ (2 * dt)))
     
@@ -350,7 +342,7 @@ model{
     ETR.eps[i] ~ dnorm(ETR.eps[i - 1] * (ETR.phi ^ dt), ETR.pc[i])
     ETR.pc[i] = ETR.tau * ((1 - ETR.phi ^ 2) / (1 - ETR.phi ^ (2 * dt)))
   }
-
+  
   # Time dependent variables, ts parameters ----
   tempC.tau ~ dgamma(10, 5)
   tempC.phi ~ dbeta(2, 5)
@@ -370,21 +362,9 @@ model{
   PCQ_pf.tau ~ dgamma(10, 1e-3)
   PCQ_pf.phi ~ dbeta(2, 5)
   
-  sal.tau ~ dgamma(10, 1e-2)
-  sal.phi ~ dbeta(10, 2)
-  
-  xca.tau ~ dgamma(10, 1e-2)
-  xca.phi ~ dbeta(10, 2)
-  
-  xmg.tau ~ dgamma(10, 5e-2)
-  xmg.phi ~ dbeta(10, 2)
-  
-  xso4.tau ~ dgamma(10, 1e-2)
-  xso4.phi ~ dbeta(10, 2)
-  
-  dic.tau ~ dgamma(10, 1e-2)
-  dic.phi ~ dbeta(5, 2)
-  
+  wrng.tau ~ dgamma(10, 5e-4)
+  wrng.phi ~ dbeta(10, 2)
+
   d11Bsw.tau ~ dgamma(10, 1e-2)
   d11Bsw.phi ~ dbeta(10, 2)
   
@@ -403,8 +383,8 @@ model{
   f_R.tau ~ dgamma(10, 1e-5)
   f_R.phi ~ dbeta(2, 5)
   
-  d13Ca.tau ~ dgamma(10, 1e-1)
-  d13Ca.phi ~ dbeta(5, 2)
+  d13Ca.tau ~ dgamma(10, 1e-3)
+  d13Ca.phi ~ dbeta(2, 5)
   
   ETR.tau ~ dgamma(10, 1e-5)
   ETR.phi ~ dbeta(2, 5)
@@ -435,27 +415,22 @@ model{
   
   ## Secondary marine ----
   sal[1] ~ dnorm(35, 1 / 2 ^ 2)T(25, 45) # surface water salinity, ppt
-  sal.eps[1] = 0
   xca[1] ~ dnorm(21, 1 / 1 ^ 2)T(14, 28) # seawater [Ca], mmol/kg
-  xca.eps[1] = 0
   xmg[1] ~ dnorm(68, 1 / 2 ^ 2)T(40, 90) # seawater [Mg], mmol/kg 
-  xmg.eps[1] = 0
   xso4[1] ~ dnorm(14, 1 / 0.5 ^ 2)T(10, 18) # seawater [SO4], mmol/kg
-  xso4.eps[1] = 0
-  dic[1] ~ dnorm(0.00205, 1 / 0.0001 ^ 2)T(0.0015, 0.0025) # seawater DIC, 
-  dic.eps[1] = 0
+  dic[1] ~ dnorm(0.00205, 1 / 0.0001 ^ 2)T(0.0015, 0.0025) # seawater DIC
+  wrng[1] ~ dnorm(0, 1 / 0.01 ^ 2)T(-0.02, 0.02)
   d11Bsw[1] ~ dnorm(38.45, 1 / 0.5 ^ 2) # seawater d11B, ppt
   d11Bsw.eps[1] = 0
   d18Osw[1] ~ dnorm(-1.2, 1 / 0.1 ^ 2) # seawater d18O, ppt
   d18Osw.eps[1] = 0
   d13Cepsilon[1] ~ dnorm(12, 1 / 0.5 ^ 2) # offset between foram calcite and d13Catm
   d13Cepsilon.eps[1] = 0
-  
+
   ## Secondary soil ----
   tsc[1] ~ dbeta(0.25 * 1000 / 0.75, 1000) # seasonal offset of PCQ for thermal diffusion
   tsc.eps[1] = 0
   ha[1] ~ dunif(0.2, 0.5)
-  #  ha[1] ~ dbeta(0.35 * 500 / 0.65, 500) # PCQ atmospheric humidity
   ha.eps[1] = 0
   f_R[1] ~ dbeta(0.15 * 500 / 0.85, 500) # ratio of PCQ to mean annual respiration rate
   f_R.eps[1] = 0
@@ -463,6 +438,7 @@ model{
   d13Ca.eps[1] = 0
   ETR[1] ~ dbeta(0.06 * 1000 / 0.94, 1000) # Soil evaporation / AET
   ETR.eps[1] = 0
+  orgEff ~ dnorm(2e4, 2e-6)
   
   # Not time dependent ----
   ## Marine ----
@@ -478,6 +454,8 @@ model{
   bGrub = 5.76
   mTsac = 0.82
   bTsac = 2.04
+  sens ~ dgamma(4.5 * 5, 5)
+  wrngK ~ dgamma(0.01 * 10, 10)
   
   ## Terrestrial ----
   lat = 30 # terrestrial site latitude
