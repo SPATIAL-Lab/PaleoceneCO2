@@ -33,7 +33,7 @@ d13Cc = na.exclude(td[c("Age", "d13C", "d13C.stdev")])
 d18Oc = na.exclude(td[c("Age", "d18O", "d18O.stdev")])
 D47c = na.exclude(td[c("Age", "D47", "D47.stderr")])
 
-dt = 0.5
+dt = 0.25
 ages = seq(-66, -53, by = dt)
 d18Of.ai = get.ind(d18Of$age, ages)
 d13Cf.ai = get.ind(d13Cf$age, ages)
@@ -63,4 +63,4 @@ parms = c("tempC", "pCO2", "MAT", "MAP", "TmPCQ", "PPCQ", "d18.p",
 system.time({post.tsd = jags.parallel(d, NULL, parms, "code/models/time_series_discrete.R", 
                         n.iter = 1e5, n.chains = 3)})
 
-save(post.tsd, file = "bigout/tsd1e5.rda")
+save(post.tsd, file = "bigout/tsd1e5_250.rda")
