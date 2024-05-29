@@ -261,7 +261,7 @@ model{
   ## Primary environmental ----
   tempC ~ dnorm(30, 1 / 3^2) # surface water temperature, C
   #  tempC = 30
-  pco2 ~ dnorm(0.000875, 1 / 0.0001)T(0.0001, 0.002) # atmospheric CO2 mixing ratio
+  pco2 ~ dunif(0.0001, 0.002) # atmospheric CO2 mixing ratio
   #  pco2 = 0.000875
   MAT_off ~ dnorm(-18, 1 / 4^2) # offset between terrestrial and marine temperatures, C
   PCQ_to ~ dnorm(15, 1 / 2^2) # PCQ temperature offset, C

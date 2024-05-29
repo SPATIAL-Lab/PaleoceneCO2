@@ -79,7 +79,7 @@ data = list(d13Cc.obs = -9.7, d13Cc.se = 0.02,
             D47c.obs = 0.6043, D47c.se = 0.017)
 
 post.tO = jags(data, NULL, parms, 
-               "code/models/single_sample_tO.R", n.iter = 5e5)
+               "code/models/single_sample_tO.R", n.iter = 10e5)
 View(post.tO$BUGSoutput$summary)
 save(post.tO, file = "out/sstO.rda")
 
