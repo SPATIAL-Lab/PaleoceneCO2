@@ -33,7 +33,7 @@ d13Cc = na.exclude(td[c("Age", "d13C", "d13C.stdev")])
 d18Oc = na.exclude(td[c("Age", "d18O", "d18O.stdev")])
 D47c = na.exclude(td[c("Age", "D47", "D47.stderr")])
 
-dt = 0.5
+dt = 0.25
 ages = seq(-66, -53, by = dt)
 d18Of.ai = get.ind(d18Of$age, ages)
 d13Cf.ai = get.ind(d13Cf$age, ages)
@@ -66,4 +66,4 @@ system.time({
                             n.iter = 1e5, n.chains = 3)
   })
 
-save(post.tsmd, file = "bigout/tsmd1e5.rda")
+save(post.tsmd, file = "bigout/tsmd1e5_250.rda")

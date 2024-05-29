@@ -438,7 +438,7 @@ model{
   d13Ca.eps[1] = 0
   ETR[1] ~ dbeta(0.06 * 1000 / 0.94, 1000) # Soil evaporation / AET
   ETR.eps[1] = 0
-  orgEff ~ dnorm(2e4, 2e-6)
+  orgEff ~ dunif(0, 4e4)
   
   # Not time dependent ----
   ## Marine ----
